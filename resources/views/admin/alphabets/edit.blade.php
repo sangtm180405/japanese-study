@@ -1,0 +1,73 @@
+@extends('adminlayout.app')
+
+@section('content')
+<div class="mb-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-gray-900">Sửa ký tự</h1>
+        <a href="{{ route('admin.alphabets.index') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+            ← Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm p-6">
+    <form action="{{ route('admin.alphabets.update', $alphabet) }}" method="POST">
+        @csrf
+        @method('PUT')
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Ký tự -->
+            <div>
+                <label for="character" class="block text-sm font-medium text-gray-700 mb-2">Ký tự tiếng Nhật *</label>
+                <input type="text" id="character" name="character" value="{{ old('character', $alphabet->character) }}" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-2xl font-bold
+                              @error('character') border-red-500 @enderror" 
+                       placeholder="あ" required>
+                @error('character')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+            
+            <!-- Romaji -->
+            <div>
+                <label for="romaji" class="block text-sm font-medium text-gray-700 mb-2">Romaji *</label>
+                <input type="text" id="romaji" name="romaji" value="{{ old('romaji', $alphabet->romaji) }}" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2
+                              @error('romaji') border-red-500 @enderror" 
+                       placeholder="a" required>
+                @error('romaji')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+            
+            <!-- Loại -->
+            <div>
+                <label for="type" class="block text-sm font-medium text-gray-700 mb-2">Loại bảng chữ *</label>
+                <select id="type" name="type" 
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2
+                               @error('type') border-red-500 @enderror" required>
+                    <option value="">Chọn loại</option>
+                    <option value="hiragana" {{ old('type', $alphabet->type) == 'hiragana' ? 'selected' : '' }}>Hiragana</option>
+                    <option value="katakana" {{ old('type', $alphabet->type) == 'katakana' ? 'selected' : '' }}>Katakana</option>
+                    <option value="romaji" {{ old('type', $alphabet->type) == 'romaji' ? 'selected' : '' }}>Romaji</option>
+                </select>
+                @error('type')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+        
+        <!-- Buttons -->
+        <div class="mt-8 flex justify-end space-x-4">
+            <a href="{{ route('admin.alphabets.index') }}" 
+               class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400">
+                Hủy
+            </a>
+            <button type="submit" 
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                Cập nhật ký tự
+            </button>
+        </div>
+    </form>
+</div>
+@endsection

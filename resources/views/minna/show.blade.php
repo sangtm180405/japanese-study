@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ $lesson->title }} - Minna no Nihongo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .japanese-text {
+            font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+            font-size: 1.2em;
+        }
+        .sidebar-item {
+            transition: all 0.3s ease;
+        }
+        .sidebar-item:hover {
+            transform: translateX(4px);
+        }
+        .sidebar-item.active {
+            background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+            color: white;
+        }
+        .section-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            min-height: 200px; /* Prevent layout shift */
+        }
+        .section-content.active {
+            display: block;
+            opacity: 1;
+        }
+        .sticky-sidebar {
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+        @media (max-width: 1024px) {
+            .sticky-sidebar {
+                position: relative;
+                top: 0;
+                max-height: none;
+            }
+        }
+        .sticky-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sticky-sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .sticky-sidebar::-webkit-scrollbar-thumb {
+            background: #dc2626;
+            border-radius: 10px;
+        }
+        .sticky-sidebar::-webkit-scrollbar-thumb:hover {
+            background: #b91c1c;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100">
+    @include('layouts.header')
+
+    <div class="container mx-auto px-4 lg:px-8 py-8 md:py-16 lg:py-24">
+        <!-- Breadcrumb -->
+        <nav class="mb-6">
+            <a href="{{ route('minna.index') }}" class="inline-flex items-center text-red-600 hover:text-red-700 transition group">
+                <svg class="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Quay lại danh sách bài học
+            </a>
+        </nav>
+
+        <!-- Lesson Header Card -->
+        <div class="bg-white rounded-2xl shadow-xl p-4 md:p-6 lg:p-8 mb-6 md:mb-8 border border-gray-100">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 md:gap-3 mb-3">
+                        <span class="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-red-600 to-red-700 text-white text-lg md:text-xl font-bold rounded-xl shadow-lg flex-shrink-0">
+                            {{ str_pad($lesson->number, 2, '0', STR_PAD_LEFT) }}
+                        </span>
+                        <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 break-words">{{ $lesson->title }}</h1>
+                    </div>
+                    @if($lesson->description)
+                        <p class="text-gray-600 text-sm md:text-base lg:text-lg ml-0 md:ml-14 lg:ml-16">{{ $lesson->description }}</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-4 md:gap-6 lg:gap-8">
+            <!-- Sidebar Navigation -->
+            <aside class="w-full lg:w-80 flex-shrink-0">
+                <div class="bg-white rounded-2xl shadow-xl p-4 md:p-6 sticky-sidebar border border-gray-100">
+                    <h2 class="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 pb-3 md:pb-4 border-b-2 border-red-600">
+                        📚 Nội dung bài học
+                    </h2>
+                    <nav class="space-y-2" id="section-nav">
+                        @php
+                            $sectionTitles = [
+                                'tu-vung' => 'Từ vựng',
+                                'ngu-phap' => 'Ngữ pháp',
+                                'luyen-doc' => 'Luyện đọc',
+                                'hoi-thoai' => 'Hội thoại',
+                                'han-tu' => 'Hán tự'
+                            ];
+                            $sectionIcons = [
+                                'tu-vung' => '📚',
+                                'ngu-phap' => '📖',
+                                'luyen-doc' => '📝',
+                                'hoi-thoai' => '💬',
+                                'han-tu' => '✍️'
+                            ];
+                            $sectionOrder = ['tu-vung', 'ngu-phap', 'luyen-doc', 'hoi-thoai', 'han-tu'];
+                            $orderedNavKeys = [];
+                            foreach ($sectionOrder as $orderedKey) {
+                                if (isset($sectionsByKey[$orderedKey])) {
+                                    $orderedNavKeys[] = $orderedKey;
+                                }
+                            }
+                            foreach ($sectionsByKey->keys() as $key) {
+                                if (! in_array($key, $sectionOrder)) {
+                                    $orderedNavKeys[] = $key;
+                                }
+                            }
+                            $navFirst = true;
+                        @endphp
+                        @forelse($orderedNavKeys as $key)
+                            <button 
+                                onclick="showSection('{{ $key }}')"
+                                class="section-nav-btn w-full sidebar-item p-3 md:p-4 rounded-xl text-left font-semibold text-sm md:text-base text-gray-700 hover:bg-red-50 transition-all {{ $navFirst ? 'active' : '' }}"
+                                data-section="{{ $key }}">
+                                <div class="flex items-center gap-2 md:gap-3">
+                                    <span class="text-xl md:text-2xl">{{ $sectionIcons[$key] ?? '📘' }}</span>
+                                    <span>{{ $sectionTitles[$key] ?? ucwords(str_replace('-', ' ', $key)) }}</span>
+                                </div>
+                            </button>
+                            @php $navFirst = false; @endphp
+                        @empty
+                            <p class="text-sm text-gray-500">Chưa có nội dung cho bài này.</p>
+                        @endforelse
+                    </nav>
+
+                    <!-- Progress Indicator (Optional) -->
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-600">Tiến độ học tập</span>
+                            <span class="text-sm font-bold text-red-600">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-red-600 to-red-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 min-w-0">
+                <div class="bg-white rounded-2xl shadow-xl p-4 md:p-6 lg:p-8 border border-gray-100" style="min-height: 400px;">
+                    @php
+                        $contentFirst = true;
+                    @endphp
+                    @forelse($orderedNavKeys as $key)
+                        @php $sectionGroup = $sectionsByKey[$key]; @endphp
+                        <div 
+                            id="section-{{ $key }}" 
+                            class="section-content {{ $contentFirst ? 'active' : '' }}"
+                            data-section="{{ $key }}">
+                            @php $contentFirst = false; @endphp
+
+                            @foreach($sectionGroup as $index => $section)
+                                <div class="{{ $index > 0 ? 'mt-10 pt-6 border-t border-dashed border-gray-200' : '' }}">
+                                    <div class="flex items-center gap-2 md:gap-4 mb-6 md:mb-8 pb-4 md:pb-6 border-b-2 border-red-600">
+                                        <span class="text-2xl md:text-3xl lg:text-4xl">
+                                            {{ $sectionIcons[$key] ?? '📘' }}
+                                        </span>
+                                        <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 break-words">
+                                            {{ $section->title }}
+                                            @if($sectionGroup->count() > 1)
+                                                <span class="text-sm md:text-base text-gray-500 font-medium ml-2">
+                                                    Phần {{ $index + 1 }}
+                                                </span>
+                                            @endif
+                                        </h2>
+                                    </div>
+
+                                    <div class="section-body">
+                                        @if($section->content)
+                                            @if($key === 'tu-vung')
+                                                @include('minna.sections.tu-vung', ['content' => $section->content])
+                                            @elseif($key === 'ngu-phap')
+                                                @include('minna.sections.ngu-phap', ['content' => $section->content])
+                                            @elseif($key === 'luyen-doc')
+                                                @include('minna.sections.luyen-doc', ['content' => $section->content])
+                                            @elseif($key === 'hoi-thoai')
+                                                @include('minna.sections.hoi-thoai', ['content' => $section->content])
+                                            @elseif($key === 'han-tu')
+                                                @include('minna.sections.han-tu', ['content' => $section->content])
+                                            @else
+                                                <div class="text-gray-700 space-y-3">
+                                                    <pre class="bg-gray-50 rounded-xl p-4 overflow-auto text-sm">{{ json_encode($section->content, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
+                                                </div>
+                                            @endif
+                                        @else
+                                            <div class="text-center py-12">
+                                                <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
+                                                    <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                    </svg>
+                                                </div>
+                                                <p class="text-gray-500 text-lg italic">Nội dung đang được cập nhật...</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @empty
+                        <div class="text-center py-16">
+                            <p class="text-gray-500 text-lg">Chưa có nội dung cho bài học này.</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Navigation Buttons -->
+                @php
+                    $previousLessonUrl = isset($previousLessonNumber) ? route('minna.show', ['number' => $previousLessonNumber]) : null;
+                    $nextLessonUrl = isset($nextLessonNumber) ? route('minna.show', ['number' => $nextLessonNumber]) : null;
+                @endphp
+                <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mt-6 md:mt-8 gap-3 md:gap-4">
+                    <button 
+                        type="button"
+                        data-nav="prev"
+                        @if($previousLessonUrl)
+                            onclick="navigateToLesson('{{ $previousLessonUrl }}')"
+                        @else
+                            disabled
+                        @endif
+                        class="flex items-center justify-center gap-2 px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-semibold text-sm md:text-base transition-all border
+                            {{ $previousLessonUrl ? 'bg-white shadow-lg hover:shadow-xl border-gray-200 hover:border-red-300 text-gray-700 hover:text-red-600' : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed' }}">
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Bài trước</span>
+                        <span class="sm:hidden">Trước</span>
+                    </button>
+                    <button 
+                        type="button"
+                        data-nav="next"
+                        @if($nextLessonUrl)
+                            onclick="navigateToLesson('{{ $nextLessonUrl }}')"
+                        @else
+                            disabled
+                        @endif
+                        class="flex items-center justify-center gap-2 px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-semibold text-sm md:text-base transition-all
+                            {{ $nextLessonUrl ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg hover:shadow-xl hover:from-red-700 hover:to-red-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed' }}">
+                        <span class="hidden sm:inline">Bài tiếp theo</span>
+                        <span class="sm:hidden">Tiếp</span>
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    @include('layouts.footer')
+
+    <script>
+        function showSection(sectionKey) {
+            // Hide all sections with smooth fade out
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.style.opacity = '0';
+                setTimeout(() => {
+                    section.classList.remove('active');
+                }, 150);
+            });
+
+            // Show selected section with smooth fade in
+            const targetSection = document.getElementById('section-' + sectionKey);
+            if (targetSection) {
+                setTimeout(() => {
+                    targetSection.classList.add('active');
+                    // Force reflow to ensure transition works
+                    targetSection.offsetHeight;
+                    targetSection.style.opacity = '1';
+                    
+                    // On mobile, scroll to the main content area after showing section
+                    if (window.innerWidth < 1024) {
+                        setTimeout(() => {
+                            const mainContent = document.querySelector('main .bg-white');
+                            if (mainContent) {
+                                // Get header height dynamically
+                                const header = document.querySelector('header');
+                                const headerHeight = header ? header.offsetHeight : 80;
+                                
+                                // Calculate scroll position with offset for better visibility
+                                const rect = mainContent.getBoundingClientRect();
+                                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                const offset = rect.top + scrollTop - headerHeight - 20; // 20px extra spacing
+                                
+                                window.scrollTo({
+                                    top: Math.max(0, offset),
+                                    behavior: 'smooth'
+                                });
+                            }
+                        }, 200);
+                    }
+                    
+                    // Update URL hash without scrolling (for bookmarking)
+                    if (history.pushState) {
+                        history.pushState(null, null, '#section-' + sectionKey);
+                    }
+                }, 150);
+            }
+
+            // Update active nav button
+            document.querySelectorAll('.section-nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.querySelector(`[data-section="${sectionKey}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+        }
+
+        const lessonNav = {
+            prevUrl: @json($previousLessonUrl),
+            nextUrl: @json($nextLessonUrl),
+        };
+
+        function navigateToLesson(url) {
+            if (!url) {
+                return;
+            }
+            window.location.href = url;
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    navigateToLesson(lessonNav.prevUrl);
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    navigateToLesson(lessonNav.nextUrl);
+                }
+            }
+        });
+        
+        // Handle initial section from URL hash
+        window.addEventListener('DOMContentLoaded', function() {
+            const hash = window.location.hash;
+            if (hash && hash.startsWith('#section-')) {
+                const sectionKey = hash.replace('#section-', '');
+                const sectionExists = document.getElementById('section-' + sectionKey);
+                if (sectionExists) {
+                    showSection(sectionKey);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
