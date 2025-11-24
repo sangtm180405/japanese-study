@@ -30,6 +30,18 @@
             word-break: break-word;
             white-space: normal;
         }
+        .char-card {
+            cursor: pointer;
+        }
+        .char-card:active {
+            transform: scale(0.97);
+        }
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.6);
+        }
+        .drawing-canvas {
+            touch-action: none; /* giúp vẽ trên mobile không bị cuộn trang */
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
@@ -90,7 +102,10 @@
                             @else
                                 @php $charData = $hiraganaData->get($char); @endphp
                                 @if($charData)
-                                    <div class="bg-red-50 p-4 rounded-lg border border-red-200 hover:shadow-md transition-all duration-300 h-16 flex flex-col justify-center items-center">
+                                    <div class="char-card bg-red-50 p-4 rounded-lg border border-red-200 hover:shadow-md transition-all duration-300 h-16 flex flex-col justify-center items-center"
+                                         data-char="{{ $charData->character }}"
+                                         data-type="kana"
+                                         data-reading="{{ $charData->romaji }}">
                                         <div class="japanese-font text-red-700 mb-1 text-xl w-full flex justify-center items-center"><span>{{ $charData->character }}</span></div>
                                         <div class="text-xs font-medium text-gray-600 w-full flex justify-center items-center"><span>{{ $charData->romaji }}</span></div>
                                     </div>
@@ -128,7 +143,10 @@
                             @else
                                 @php $charData = $katakanaData->get($char); @endphp
                                 @if($charData)
-                                    <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 hover:shadow-md transition-all duration-300 h-16 flex flex-col justify-center items-center">
+                                    <div class="char-card bg-yellow-50 p-4 rounded-lg border border-yellow-200 hover:shadow-md transition-all duration-300 h-16 flex flex-col justify-center items-center"
+                                         data-char="{{ $charData->character }}"
+                                         data-type="kana"
+                                         data-reading="{{ $charData->romaji }}">
                                         <div class="japanese-font text-yellow-700 mb-1 text-xl w-full flex justify-center items-center"><span>{{ $charData->character }}</span></div>
                                         <div class="text-xs font-medium text-gray-600 w-full flex justify-center items-center"><span>{{ $charData->romaji }}</span></div>
                                     </div>
@@ -277,8 +295,50 @@
         </div>
     </div>
     
+    <!-- Modal luyện viết & phát âm -->
+    <div id="charModal" class="fixed inset-0 modal-backdrop hidden z-50 items-center justify-center px-4">
+        <div class="bg-white rounded-2xl max-w-md md:max-w-xl w-full p-6 md:p-8 relative shadow-2xl">
+            <button type="button"
+                    id="closeCharModal"
+                    class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                ✕
+            </button>
+
+            <div class="flex flex-col items-center text-center gap-4 md:gap-6">
+                <div id="modalCharText"
+                     class="japanese-font text-6xl md:text-7xl mt-2 mb-1 text-gray-900">
+                </div>
+                <div id="modalReading"
+                     class="text-sm text-gray-500 mb-1"></div>
+
+                <button type="button"
+                        id="playAudioBtn"
+                        class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-red-600 text-white text-sm font-semibold shadow hover:bg-red-700 transition">
+                    <span>Nghe phát âm</span>
+                </button>
+
+                <div class="mt-4 w-44 h-44 md:w-52 md:h-52 border border-gray-200 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden">
+                    <div id="strokeContainer" class="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                        Đang tải thứ tự nét vẽ...
+                    </div>
+                </div>
+                <p class="mt-1 text-[11px] text-gray-400">
+                    Thứ tự nét vẽ được vẽ tự động, có thể sai với một số chữ hiếm.
+                </p>
+
+                <a href="{{ route('minna.index') }}"
+                   class="mt-1 inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700 underline">
+                    <span>Xem Hán tự trong Minna no Nihongo</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
     @include('layouts.footer')
     
+    <!-- Thư viện vẽ thứ tự nét cho Kanji (client-side, không cần backend) -->
+    <script src="https://unpkg.com/hanzi-writer@latest/dist/hanzi-writer.min.js"></script>
+
     <script>
         function showContent(type) {
             // Hide all content
@@ -291,10 +351,11 @@
         }
 
         // Dữ liệu Kanji dưới dạng JSON, chỉ dùng khi người dùng chọn cấp
+        // Ở đây truyền thẳng model sang JS, sau đó dùng các field: character, meaning, on_reading, kun_reading
         const KANJI = {
-            N5: @json(isset($kanjiN5) ? $kanjiN5->map(fn($k)=>['c'=>$k->character,'m'=>$k->meaning]) : []),
-            N4: @json(isset($kanjiN4) ? $kanjiN4->map(fn($k)=>['c'=>$k->character,'m'=>$k->meaning]) : []),
-            N3: @json(isset($kanjiN3) ? $kanjiN3->map(fn($k)=>['c'=>$k->character,'m'=>$k->meaning]) : [])
+            N5: @json(isset($kanjiN5) ? $kanjiN5 : []),
+            N4: @json(isset($kanjiN4) ? $kanjiN4 : []),
+            N3: @json(isset($kanjiN3) ? $kanjiN3 : []),
         };
 
         const levelStyles = {
@@ -322,10 +383,15 @@
 
             let html = '<div class="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">';
             for (const item of slice) {
+                const reading = (item.on_reading || '') + (item.kun_reading ? ' ・ ' + item.kun_reading : '');
                 html += `
-                <div class="p-3 sm:p-4 rounded-lg border hover:shadow-sm min-h-[84px] sm:min-h-[96px] flex flex-col justify-center items-center ${styles.card}">
-                    <div class="japanese-font text-2xl sm:text-3xl mb-1 ${styles.text} w-full flex justify-center items-center"><span>${item.c}</span></div>
-                    <div class="text-[11px] sm:text-xs text-gray-600 kanji-desc text-center w-full">${item.m ?? ''}</div>
+                <div class="char-card p-3 sm:p-4 rounded-lg border hover:shadow-sm min-h-[84px] sm:min-h-[96px] flex flex-col justify-center items-center ${styles.card}"
+                     data-char="${item.character}"
+                     data-type="kanji"
+                     data-reading="${reading.replace(/"/g, '&quot;')}"
+                     data-meaning="${(item.meaning || '').replace(/"/g, '&quot;')}">
+                    <div class="japanese-font text-2xl sm:text-3xl mb-1 ${styles.text} w-full flex justify-center items-center"><span>${item.character}</span></div>
+                    <div class="text-[11px] sm:text-xs text-gray-600 kanji-desc text-center w-full">${item.meaning ?? ''}</div>
                 </div>`;
             }
             html += '</div>';
@@ -344,6 +410,106 @@
             pill.classList.add('bg-white','shadow');
 
             renderKanji(level, 1);
+        });
+
+        // Modal luyện viết & phát âm
+        const modal = document.getElementById('charModal');
+        const modalCharText = document.getElementById('modalCharText');
+        const modalReading = document.getElementById('modalReading');
+        const playAudioBtn = document.getElementById('playAudioBtn');
+        const closeModalBtn = document.getElementById('closeCharModal');
+        const strokeContainer = document.getElementById('strokeContainer');
+
+        let currentChar = null;
+        let currentReading = '';
+        let currentType = null;
+        let writerInstance = null;
+
+        function openCharModal(char, type, reading) {
+            currentChar = char;
+            currentReading = reading || '';
+            currentType = type;
+
+            modalCharText.textContent = char || '';
+            modalReading.textContent = currentReading ? ('Cách đọc: ' + currentReading) : '';
+
+            // Setup audio
+            playAudioBtn.onclick = function () {
+                if (!('speechSynthesis' in window)) {
+                    alert('Trình duyệt của bạn không hỗ trợ phát âm (Speech Synthesis).');
+                    return;
+                }
+                const utterance = new SpeechSynthesisUtterance(char);
+                utterance.lang = 'ja-JP';
+                utterance.rate = 0.9;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            };
+
+            // Setup stroke order với HanziWriter (chỉ áp dụng cho Kanji)
+            if (type === 'kanji') {
+                if (window.HanziWriter) {
+                    strokeContainer.innerHTML = '';
+                    try {
+                        if (writerInstance) {
+                            writerInstance.setCharacter(char);
+                        } else {
+                            writerInstance = HanziWriter.create('strokeContainer', char, {
+                                width: strokeContainer.clientWidth || 200,
+                                height: strokeContainer.clientHeight || 200,
+                                padding: 5,
+                                showCharacter: true,
+                                strokeAnimationSpeed: 1.1,
+                                delayBetweenStrokes: 150,
+                                strokeColor: '#ef4444',
+                                radicalColor: '#dc2626'
+                            });
+                        }
+                        writerInstance.animateCharacter();
+                    } catch (error) {
+                        strokeContainer.textContent = 'Không có dữ liệu nét vẽ cho chữ này.';
+                    }
+                } else {
+                    strokeContainer.textContent = 'Không thể tải thư viện nét vẽ.';
+                }
+            } else {
+                // Kana: tạm thời chưa có dữ liệu nét vẽ, chỉ hiển thị thông báo
+                strokeContainer.innerHTML = '<span class="text-[11px] text-gray-400 px-3 text-center">Thứ tự nét vẽ cho Hiragana/Katakana sẽ được cập nhật sau.</span>';
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCharModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        closeModalBtn.addEventListener('click', closeCharModal);
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                closeCharModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeCharModal();
+            }
+        });
+
+        // Lắng nghe click trên bất kỳ .char-card nào
+        document.addEventListener('click', function (e) {
+            const card = e.target.closest('.char-card');
+            if (!card) return;
+            const char = card.getAttribute('data-char');
+            const type = card.getAttribute('data-type');
+            const reading = card.getAttribute('data-reading') || '';
+            openCharModal(char, type, reading);
         });
 
         // Loại bỏ xử lý click phân trang
