@@ -8,6 +8,19 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
+// Auth Routes
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [App\Http\Controllers\AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login.post');
+
+    Route::get('/register', [App\Http\Controllers\AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [App\Http\Controllers\AuthController::class, 'register'])->name('register.post');
+});
+
+Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
+
 Route::get('/admin', function () {
     return view('admin.admin');
 })->name('admin.dashboard');
@@ -22,6 +35,6 @@ Route::prefix('minna')->name('minna.')->group(function () {
 });
 
 // Admin Alphabet CRUD Routes
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('alphabets', App\Http\Controllers\AlphabetController::class);
 });
