@@ -336,9 +336,6 @@
 
     @include('layouts.footer')
     
-    <!-- Thư viện vẽ thứ tự nét cho Kanji (client-side, không cần backend) -->
-    <script src="https://unpkg.com/hanzi-writer@latest/dist/hanzi-writer.min.js"></script>
-
     <script>
         function showContent(type) {
             // Hide all content
@@ -423,7 +420,6 @@
         let currentChar = null;
         let currentReading = '';
         let currentType = null;
-        let writerInstance = null;
 
         function openCharModal(char, type, reading) {
             currentChar = char;
@@ -446,35 +442,20 @@
                 window.speechSynthesis.speak(utterance);
             };
 
-            // Setup stroke order với HanziWriter (chỉ áp dụng cho Kanji)
+            // Hiển thị GIF thứ tự nét vẽ (sẽ được bổ sung sau)
+            strokeContainer.innerHTML = '';
             if (type === 'kanji') {
-                if (window.HanziWriter) {
-                    strokeContainer.innerHTML = '';
-                    try {
-                        if (writerInstance) {
-                            writerInstance.setCharacter(char);
-                        } else {
-                            writerInstance = HanziWriter.create('strokeContainer', char, {
-                                width: strokeContainer.clientWidth || 200,
-                                height: strokeContainer.clientHeight || 200,
-                                padding: 5,
-                                showCharacter: true,
-                                strokeAnimationSpeed: 1.1,
-                                delayBetweenStrokes: 150,
-                                strokeColor: '#ef4444',
-                                radicalColor: '#dc2626'
-                            });
-                        }
-                        writerInstance.animateCharacter();
-                    } catch (error) {
-                        strokeContainer.textContent = 'Không có dữ liệu nét vẽ cho chữ này.';
-                    }
-                } else {
-                    strokeContainer.textContent = 'Không thể tải thư viện nét vẽ.';
-                }
+                const img = document.createElement('img');
+                img.src = '/strokes/' + encodeURIComponent(char) + '.gif';
+                img.alt = 'Thứ tự nét vẽ ' + char;
+                img.className = 'w-full h-full object-contain';
+                img.onerror = function () {
+                    strokeContainer.textContent = 'Chưa có GIF nét vẽ cho chữ này.';
+                };
+                strokeContainer.appendChild(img);
             } else {
-                // Kana: tạm thời chưa có dữ liệu nét vẽ, chỉ hiển thị thông báo
-                strokeContainer.innerHTML = '<span class="text-[11px] text-gray-400 px-3 text-center">Thứ tự nét vẽ cho Hiragana/Katakana sẽ được cập nhật sau.</span>';
+                // Kana: tạm thời chỉ hiển thị thông báo
+                strokeContainer.innerHTML = '<span class="text-[11px] text-gray-400 px-3 text-center">GIF nét vẽ sẽ được bổ sung sau.</span>';
             }
 
             modal.classList.remove('hidden');
