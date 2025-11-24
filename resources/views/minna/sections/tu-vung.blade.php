@@ -28,13 +28,36 @@
                             <th class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Hán tự</th>
                             <th class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Âm Hán</th>
                             <th class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Nghĩa</th>
+                            <th class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">Ghi chú</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($content['vocab'] as $vocab)
+                            @php
+                                $pos = $vocab['loai_tu'] ?? null; // danh_tu, dong_tu, tinh_tu...
+                                $posLabelMap = [
+                                    'danh_tu' => 'Danh từ',
+                                    'dong_tu' => 'Động từ',
+                                    'tinh_tu' => 'Tính từ',
+                                ];
+                                $posColorMap = [
+                                    'danh_tu' => 'bg-blue-100 text-blue-800',
+                                    'dong_tu' => 'bg-green-100 text-green-800',
+                                    'tinh_tu' => 'bg-purple-100 text-purple-800',
+                                ];
+                                $posLabel = $posLabelMap[$pos] ?? null;
+                                $posClass = $posColorMap[$pos] ?? 'bg-gray-100 text-gray-700';
+                            @endphp
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 md:px-6 py-4 whitespace-nowrap">
-                                    <span class="japanese-text text-base md:text-lg">{{ $vocab['tu_vung'] ?? '' }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="japanese-text text-base md:text-lg">{{ $vocab['tu_vung'] ?? '' }}</span>
+                                        @if($posLabel)
+                                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold {{ $posClass }}">
+                                                {{ $posLabel }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-4 md:px-6 py-4 whitespace-nowrap">
                                     <span class="japanese-text">{{ $vocab['han_tu'] ?? '-' }}</span>
@@ -44,6 +67,9 @@
                                 </td>
                                 <td class="px-4 md:px-6 py-4 text-sm text-gray-900">
                                     {{ $vocab['nghia'] ?? '' }}
+                                </td>
+                                <td class="px-4 md:px-6 py-4 text-sm text-gray-500">
+                                    {{ $vocab['ghi_chu'] ?? '' }}
                                 </td>
                             </tr>
                         @endforeach
@@ -55,6 +81,21 @@
         <!-- Mobile Card View -->
         <div class="md:hidden space-y-4">
             @foreach($content['vocab'] as $vocab)
+                @php
+                    $pos = $vocab['loai_tu'] ?? null;
+                    $posLabelMap = [
+                        'danh_tu' => 'Danh từ',
+                        'dong_tu' => 'Động từ',
+                        'tinh_tu' => 'Tính từ',
+                    ];
+                    $posColorMap = [
+                        'danh_tu' => 'bg-blue-100 text-blue-800',
+                        'dong_tu' => 'bg-green-100 text-green-800',
+                        'tinh_tu' => 'bg-purple-100 text-purple-800',
+                    ];
+                    $posLabel = $posLabelMap[$pos] ?? null;
+                    $posClass = $posColorMap[$pos] ?? 'bg-gray-100 text-gray-700';
+                @endphp
                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div class="flex items-start justify-between gap-3 mb-2">
                         <div class="flex-1">
@@ -67,6 +108,11 @@
                                 </div>
                             @endif
                         </div>
+                        @if($posLabel)
+                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold {{ $posClass }}">
+                                {{ $posLabel }}
+                            </span>
+                        @endif
                     </div>
                     <div class="space-y-1 text-sm">
                         @if(!empty($vocab['am_han']) && $vocab['am_han'] !== '-')
@@ -77,6 +123,11 @@
                         <div class="text-gray-900 font-medium">
                             <span class="font-semibold">Nghĩa:</span> {{ $vocab['nghia'] ?? '' }}
                         </div>
+                        @if(!empty($vocab['ghi_chu']))
+                            <div class="text-gray-600">
+                                <span class="font-medium">Ghi chú:</span> {{ $vocab['ghi_chu'] }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endforeach
