@@ -17,12 +17,14 @@
                 </p>
                 
                 <div class="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
-                    <button class="bg-red-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-base md:text-lg hover:bg-red-700 transition transform hover:scale-105 shadow-xl w-full sm:w-auto">
-                        Bắt đầu miễn phí
-                    </button>
-                    <button class="border-2 border-red-600 text-red-600 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-base md:text-lg hover:bg-red-50 transition w-full sm:w-auto">
-                        Xem demo
-                    </button>
+                    <a href="{{ route('minna.index') }}"
+                       class="bg-red-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-base md:text-lg hover:bg-red-700 transition transform hover:scale-105 shadow-xl w-full sm:w-auto text-center">
+                        Bắt đầu với Minna
+                    </a>
+                    <a href="{{ route('alphabet.index') }}"
+                       class="border-2 border-red-600 text-red-600 px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-base md:text-lg hover:bg-red-50 transition w-full sm:w-auto text-center">
+                        Học bảng chữ cái
+                    </a>
                 </div>
                 
                 <div class="mt-6 md:mt-8 flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
