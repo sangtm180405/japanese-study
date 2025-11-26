@@ -455,10 +455,26 @@
                 strokeContainer.appendChild(img);
             } else if (type === 'kana' && reading) {
                 // Hiragana/Katakana: sử dụng romaji để tìm file GIF
-                // Tên file format: anime-h-{romaji}2.gif
+                // Phân biệt Hiragana (あ-ん) và Katakana (ア-ン)
                 const romajiForFile = reading.toLowerCase();
+                let gifPath = '';
+                
+                // Kiểm tra xem là Hiragana hay Katakana
+                // Hiragana: U+3040-U+309F, Katakana: U+30A0-U+30FF
+                const charCode = char.charCodeAt(0);
+                if (charCode >= 0x3040 && charCode <= 0x309F) {
+                    // Hiragana: anime-h-{romaji}2.gif
+                    gifPath = '/images/gif/Hiragana/anime-h-' + romajiForFile + '2.gif';
+                } else if (charCode >= 0x30A0 && charCode <= 0x30FF) {
+                    // Katakana: anime-k-{romaji}2.gif
+                    gifPath = '/images/gif/Katakana/anime-k-' + romajiForFile + '2.gif';
+                } else {
+                    // Mặc định thử Hiragana
+                    gifPath = '/images/gif/Hiragana/anime-h-' + romajiForFile + '2.gif';
+                }
+                
                 const img = document.createElement('img');
-                img.src = '/images/gif/Hiragana/anime-h-' + romajiForFile + '2.gif';
+                img.src = gifPath;
                 img.alt = 'Thứ tự nét vẽ ' + char;
                 img.className = 'w-full h-full object-contain';
                 img.onerror = function () {
