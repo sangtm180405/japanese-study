@@ -17,6 +17,10 @@
                    class="{{ request()->routeIs('home') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600 font-medium' }} transition">
                     Trang chủ
                 </a>
+                <a href="{{ route('course.index') }}"
+                   class="{{ request()->routeIs('course.index') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600 font-medium' }} transition">
+                    Tổng hợp N
+                </a>
                 @auth
                 <a href="{{ route('user.dashboard') }}"
                    class="{{ request()->routeIs('user.dashboard') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600 font-medium' }} transition">
@@ -85,6 +89,10 @@
             <a href="{{ route('home') }}"
                class="block {{ request()->routeIs('home') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600' }}">
                 Trang chủ
+            </a>
+            <a href="{{ route('course.index') }}"
+               class="block {{ request()->routeIs('course.index') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600' }}">
+                Tổng hợp N
             </a>
             @auth
             <a href="{{ route('user.dashboard') }}"

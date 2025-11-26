@@ -32,6 +32,14 @@ Route::get('/admin', function () {
 
 Route::get('/alphabet', [App\Http\Controllers\UserAlphabetController::class, 'index'])->name('alphabet.index');
 
+// Course Routes
+Route::get('/courses', [App\Http\Controllers\CourseController::class, 'index'])->name('course.index');
+Route::get('/course/{level}', [App\Http\Controllers\CourseController::class, 'show'])->name('course.show');
+Route::get('/course/{level}/{sectionType}', [App\Http\Controllers\CourseController::class, 'showSection'])->name('course.section');
+Route::get('/course/{level}/luyen-doc/{id}', [App\Http\Controllers\CourseController::class, 'showLuyenDocDetail'])->name('course.luyen-doc.detail');
+Route::get('/course/{level}/marugoto-n5/{id}', [App\Http\Controllers\CourseController::class, 'showMarugotoDetail'])->name('course.marugoto.detail');
+Route::get('/course/{level}/speed-master-n5/{bai}', [App\Http\Controllers\CourseController::class, 'showSpeedMasterDetail'])->name('course.speed-master.detail');
+
 // Minna no Nihongo Routes
 Route::prefix('minna')->name('minna.')->group(function () {
     Route::get('/', [App\Http\Controllers\MinnaController::class, 'index'])->name('index');
