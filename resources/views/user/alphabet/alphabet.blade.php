@@ -60,17 +60,17 @@
             </div>
             
             <!-- Tab Buttons -->
-            <div class="flex justify-center mb-12 gap-4 flex-wrap">
-                <button onclick="showContent('hiragana')" class="tab-btn flex-1 min-w-[140px] max-w-[200px] py-4 rounded-lg font-bold text-xl bg-red-600 text-white hover:bg-red-700 transition text-center">
+            <div class="flex justify-center mb-12 gap-2 flex-wrap">
+                <button onclick="showContent('hiragana')" class="px-5 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition text-sm">
                     Hiragana
                 </button>
-                <button onclick="showContent('katakana')" class="tab-btn flex-1 min-w-[140px] max-w-[200px] py-4 rounded-lg font-bold text-xl bg-yellow-500 text-white hover:bg-yellow-600 transition text-center">
+                <button onclick="showContent('katakana')" class="px-5 py-2 rounded bg-yellow-500 text-white hover:bg-yellow-600 transition text-sm">
                     Katakana
                 </button>
-                <button onclick="showContent('romaji')" class="tab-btn flex-1 min-w-[140px] max-w-[200px] py-4 rounded-lg font-bold text-xl bg-blue-600 text-white hover:bg-blue-700 transition text-center">
+                <button onclick="showContent('romaji')" class="px-5 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition text-sm">
                     Romaji
                 </button>
-                <button onclick="showContent('kanji')" class="tab-btn flex-1 min-w-[140px] max-w-[200px] py-4 rounded-lg font-bold text-xl bg-green-600 text-white hover:bg-green-700 transition text-center">
+                <button onclick="showContent('kanji')" class="px-5 py-2 rounded bg-green-600 text-white hover:bg-green-700 transition text-sm">
                     Kanji
                 </button>
             </div>
@@ -333,7 +333,7 @@
             </div>
         </div>
     </div>
-
+    
     @include('layouts.footer')
     
     <script>
@@ -442,7 +442,7 @@
                 window.speechSynthesis.speak(utterance);
             };
 
-            // Hiển thị GIF thứ tự nét vẽ (sẽ được bổ sung sau)
+            // Hiển thị GIF thứ tự nét vẽ
             strokeContainer.innerHTML = '';
             if (type === 'kanji') {
                 const img = document.createElement('img');
@@ -453,9 +453,20 @@
                     strokeContainer.textContent = 'Chưa có GIF nét vẽ cho chữ này.';
                 };
                 strokeContainer.appendChild(img);
+            } else if (type === 'kana' && reading) {
+                // Hiragana/Katakana: sử dụng romaji để tìm file GIF
+                // Tên file format: anime-h-{romaji}2.gif
+                const romajiForFile = reading.toLowerCase();
+                const img = document.createElement('img');
+                img.src = '/images/gif/Hiragana/anime-h-' + romajiForFile + '2.gif';
+                img.alt = 'Thứ tự nét vẽ ' + char;
+                img.className = 'w-full h-full object-contain';
+                img.onerror = function () {
+                    strokeContainer.innerHTML = '<span class="text-[11px] text-gray-400 px-3 text-center">Chưa có GIF nét vẽ cho chữ này.</span>';
+                };
+                strokeContainer.appendChild(img);
             } else {
-                // Kana: tạm thời chỉ hiển thị thông báo
-                strokeContainer.innerHTML = '<span class="text-[11px] text-gray-400 px-3 text-center">GIF nét vẽ sẽ được bổ sung sau.</span>';
+                strokeContainer.innerHTML = '<span class="text-[11px] text-gray-400 px-3 text-center">Chưa có GIF nét vẽ cho chữ này.</span>';
             }
 
             modal.classList.remove('hidden');

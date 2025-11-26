@@ -17,6 +17,12 @@
                    class="{{ request()->routeIs('home') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600 font-medium' }} transition">
                     Trang chủ
                 </a>
+                @auth
+                <a href="{{ route('user.dashboard') }}"
+                   class="{{ request()->routeIs('user.dashboard') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600 font-medium' }} transition">
+                    Dashboard
+                </a>
+                @endauth
                 <a href="{{ route('minna.index') }}"
                    class="{{ request()->routeIs('minna.*') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600 font-medium' }} transition">
                     Bài học Minna
@@ -52,19 +58,19 @@
                     </span>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
-                        <button type="submit" class="bg-gray-900 text-white px-5 py-2 rounded-full font-semibold hover:bg-gray-800 transition shadow-lg text-sm">
+                        <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded text-sm hover:bg-gray-800 transition">
                             Đăng xuất
                         </button>
                     </form>
                 </div>
                 @else
-                <div class="hidden md:flex items-center space-x-3">
+                <div class="hidden md:flex items-center space-x-4">
                     <a href="{{ route('login') }}"
-                       class="text-sm font-medium text-gray-700 hover:text-red-600 transition border border-gray-300 px-4 py-1.5 rounded-full bg-white shadow-sm">
+                       class="text-sm text-gray-600 hover:text-gray-900 transition">
                         Đăng nhập
                     </a>
                     <a href="{{ route('register') }}"
-                       class="bg-red-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-red-700 transition shadow-lg text-sm">
+                       class="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 transition">
                         Đăng ký
                     </a>
                 </div>
@@ -80,6 +86,12 @@
                class="block {{ request()->routeIs('home') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600' }}">
                 Trang chủ
             </a>
+            @auth
+            <a href="{{ route('user.dashboard') }}"
+               class="block {{ request()->routeIs('user.dashboard') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600' }}">
+                Dashboard
+            </a>
+            @endauth
             <a href="{{ route('minna.index') }}"
                class="block {{ request()->routeIs('minna.*') ? 'text-red-600 font-semibold' : 'text-gray-700 hover:text-red-600' }}">
                 Bài học Minna
@@ -100,11 +112,11 @@
             @else
                 <div class="pt-2 border-t border-gray-100 space-y-2">
                     <a href="{{ route('login') }}"
-                       class="block text-gray-700 hover:text-red-600">
+                       class="block py-2 text-gray-600 hover:text-gray-900">
                         Đăng nhập
                     </a>
                     <a href="{{ route('register') }}"
-                       class="inline-flex items-center justify-center bg-red-600 text-white px-4 py-1.5 rounded-full font-semibold hover:bg-red-700 transition shadow text-sm">
+                       class="block bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 transition text-center">
                         Đăng ký
                     </a>
                 </div>

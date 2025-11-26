@@ -21,6 +21,11 @@ Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
+// User Dashboard
+Route::get('/dashboard', [App\Http\Controllers\UserController::class, 'dashboard'])
+    ->middleware('auth')
+    ->name('user.dashboard');
+
 Route::get('/admin', function () {
     return view('admin.admin');
 })->name('admin.dashboard');
