@@ -322,9 +322,6 @@
                         Đang tải thứ tự nét vẽ...
                     </div>
                 </div>
-                <p class="mt-1 text-[11px] text-gray-400">
-                    Thứ tự nét vẽ được vẽ tự động, có thể sai với một số chữ hiếm.
-                </p>
 
                 <a href="{{ route('minna.index') }}"
                    class="mt-1 inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700 underline">
@@ -443,46 +440,52 @@
             };
 
             // Hiển thị GIF thứ tự nét vẽ
-            strokeContainer.innerHTML = '';
+            const strokeContainerParent = strokeContainer.closest('.mt-4');
+            
             if (type === 'kanji') {
-                const img = document.createElement('img');
-                img.src = '/strokes/' + encodeURIComponent(char) + '.gif';
-                img.alt = 'Thứ tự nét vẽ ' + char;
-                img.className = 'w-full h-full object-contain';
-                img.onerror = function () {
-                    strokeContainer.textContent = 'Chưa có GIF nét vẽ cho chữ này.';
-                };
-                strokeContainer.appendChild(img);
-            } else if (type === 'kana' && reading) {
-                // Hiragana/Katakana: sử dụng romaji để tìm file GIF
-                // Phân biệt Hiragana (あ-ん) và Katakana (ア-ン)
-                const romajiForFile = reading.toLowerCase();
-                let gifPath = '';
-                
-                // Kiểm tra xem là Hiragana hay Katakana
-                // Hiragana: U+3040-U+309F, Katakana: U+30A0-U+30FF
-                const charCode = char.charCodeAt(0);
-                if (charCode >= 0x3040 && charCode <= 0x309F) {
-                    // Hiragana: anime-h-{romaji}2.gif
-                    gifPath = '/images/gif/Hiragana/anime-h-' + romajiForFile + '2.gif';
-                } else if (charCode >= 0x30A0 && charCode <= 0x30FF) {
-                    // Katakana: anime-k-{romaji}2.gif
-                    gifPath = '/images/gif/Katakana/anime-k-' + romajiForFile + '2.gif';
-                } else {
-                    // Mặc định thử Hiragana
-                    gifPath = '/images/gif/Hiragana/anime-h-' + romajiForFile + '2.gif';
+                // Kanji: ẩn hoàn toàn phần hiển thị GIF
+                if (strokeContainerParent) {
+                    strokeContainerParent.style.display = 'none';
+                }
+            } else {
+                // Hiển thị lại container cho Kana
+                if (strokeContainerParent) {
+                    strokeContainerParent.style.display = 'block';
                 }
                 
-                const img = document.createElement('img');
-                img.src = gifPath;
-                img.alt = 'Thứ tự nét vẽ ' + char;
-                img.className = 'w-full h-full object-contain';
-                img.onerror = function () {
+                strokeContainer.innerHTML = '';
+                
+                if (type === 'kana' && reading) {
+                    // Hiragana/Katakana: sử dụng romaji để tìm file GIF
+                    // Phân biệt Hiragana (あ-ん) và Katakana (ア-ン)
+                    const romajiForFile = reading.toLowerCase();
+                    let gifPath = '';
+                    
+                    // Kiểm tra xem là Hiragana hay Katakana
+                    // Hiragana: U+3040-U+309F, Katakana: U+30A0-U+30FF
+                    const charCode = char.charCodeAt(0);
+                    if (charCode >= 0x3040 && charCode <= 0x309F) {
+                        // Hiragana: anime-h-{romaji}2.gif
+                        gifPath = '/images/gif/Hiragana/anime-h-' + romajiForFile + '2.gif';
+                    } else if (charCode >= 0x30A0 && charCode <= 0x30FF) {
+                        // Katakana: anime-k-{romaji}2.gif
+                        gifPath = '/images/gif/Katakana/anime-k-' + romajiForFile + '2.gif';
+                    } else {
+                        // Mặc định thử Hiragana
+                        gifPath = '/images/gif/Hiragana/anime-h-' + romajiForFile + '2.gif';
+                    }
+                    
+                    const img = document.createElement('img');
+                    img.src = gifPath;
+                    img.alt = 'Thứ tự nét vẽ ' + char;
+                    img.className = 'w-full h-full object-contain';
+                    img.onerror = function () {
+                        strokeContainer.innerHTML = '<span class="text-[11px] text-gray-400 px-3 text-center">Chưa có GIF nét vẽ cho chữ này.</span>';
+                    };
+                    strokeContainer.appendChild(img);
+                } else {
                     strokeContainer.innerHTML = '<span class="text-[11px] text-gray-400 px-3 text-center">Chưa có GIF nét vẽ cho chữ này.</span>';
-                };
-                strokeContainer.appendChild(img);
-            } else {
-                strokeContainer.innerHTML = '<span class="text-[11px] text-gray-400 px-3 text-center">Chưa có GIF nét vẽ cho chữ này.</span>';
+                }
             }
 
             modal.classList.remove('hidden');
