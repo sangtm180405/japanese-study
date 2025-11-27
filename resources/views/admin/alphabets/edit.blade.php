@@ -55,6 +55,22 @@
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>
+            
+            <!-- Category -->
+            <div>
+                <label for="category" class="block text-sm font-medium text-gray-700 mb-2">Phân loại</label>
+                <select id="category" name="category" 
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2
+                               @error('category') border-red-500 @enderror">
+                    <option value="">Không có</option>
+                    <option value="seion" {{ old('category', $alphabet->category) == 'seion' ? 'selected' : '' }}>Seion (清音)</option>
+                    <option value="dakuon" {{ old('category', $alphabet->category) == 'dakuon' ? 'selected' : '' }}>Dakuon (濁音)</option>
+                    <option value="yoon" {{ old('category', $alphabet->category) == 'yoon' ? 'selected' : '' }}>Yōon (拗音)</option>
+                </select>
+                @error('category')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
         
         <!-- Buttons -->

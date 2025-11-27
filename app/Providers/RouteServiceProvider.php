@@ -28,6 +28,11 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Register route model binding for course-data
+        Route::bind('course_datum', function ($value) {
+            return \App\Models\N5CourseData::findOrFail($value);
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

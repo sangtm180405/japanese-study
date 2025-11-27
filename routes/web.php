@@ -26,10 +26,6 @@ Route::get('/dashboard', [App\Http\Controllers\UserController::class, 'dashboard
     ->middleware('auth')
     ->name('user.dashboard');
 
-Route::get('/admin', function () {
-    return view('admin.admin');
-})->name('admin.dashboard');
-
 Route::get('/alphabet', [App\Http\Controllers\UserAlphabetController::class, 'index'])->name('alphabet.index');
 
 // Course Routes
@@ -47,7 +43,12 @@ Route::prefix('minna')->name('minna.')->group(function () {
     Route::get('/bai-{number}/{sectionKey}', [App\Http\Controllers\MinnaController::class, 'showSection'])->name('section');
 });
 
-// Admin Alphabet CRUD Routes
+// Admin Routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('alphabets', App\Http\Controllers\AlphabetController::class);
+    Route::resource('kanjis', App\Http\Controllers\Admin\KanjiController::class);
+    Route::resource('minna', App\Http\Controllers\Admin\MinnaController::class);
+    Route::resource('course-data', App\Http\Controllers\Admin\CourseDataController::class);
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class)->except(['create', 'store']);
 });

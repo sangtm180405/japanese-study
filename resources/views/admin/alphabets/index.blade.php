@@ -49,6 +49,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ký tự</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Romaji</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phân loại</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
             </tr>
         </thead>
@@ -69,6 +70,19 @@
                         {{ ucfirst($alphabet->type) }}
                     </span>
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-600">
+                        @if($alphabet->category)
+                            @if($alphabet->category == 'seion') Seion (清音)
+                            @elseif($alphabet->category == 'dakuon') Dakuon (濁音)
+                            @elseif($alphabet->category == 'yoon') Yōon (拗音)
+                            @else {{ $alphabet->category }}
+                            @endif
+                        @else
+                            <span class="text-gray-400">-</span>
+                        @endif
+                    </div>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
                         <a href="{{ route('admin.alphabets.edit', $alphabet) }}" 
@@ -84,7 +98,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                     <div class="text-lg">Chưa có ký tự nào</div>
                     <div class="text-sm mt-2">Hãy thêm ký tự đầu tiên!</div>
                 </td>
