@@ -1,12 +1,12 @@
 <!-- Header -->
-<header class="fixed w-full top-0 bg-white/80 backdrop-blur-sm shadow-sm z-50">
-    <nav class="container mx-auto px-6 py-4">
+<header class="fixed w-full top-0 bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-100 z-50">
+    <nav class="container mx-auto px-6 py-5">
         <div class="flex items-center justify-between">
             <a href="{{ route('home') }}" class="flex items-center space-x-2 group">
-                <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center group-hover:scale-105 transition">
-                    <span class="text-white text-2xl font-bold">日</span>
-                </div>
-                <div>
+                <img src="{{ asset('images/logo/3.jpg') }}"
+                     alt="Logo"
+                     class="w-12 h-12 rounded-lg object-cover group-hover:scale-105 transition">
+                <div class="hidden md:block">
                     <h1 class="text-xl font-bold text-gray-900 group-hover:text-red-600 transition">日本語</h1>
                     <p class="text-xs text-gray-500">Học tiếng Nhật hiệu quả</p>
                 </div>
