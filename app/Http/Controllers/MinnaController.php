@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MinnaLesson;
-use App\Models\MinnaSection;
+use App\Services\MinnaService;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 class MinnaController extends Controller
 {
+    public function __construct(
+        private MinnaService $minnaService
+    ) {}
+
     /**
      * Hiển thị danh sách tất cả các bài học
      */
     public function index()
     {
-        // Chỉ lấy các cột cần dùng trong view để giảm tải
-        $lessons = MinnaLesson::select('id', 'number', 'title', 'description')
-            ->orderBy('number')
-            ->get();
+        $lessons = $this->minnaService->getAllLessons();
         
         return view('minna.index', compact('lessons'));
     }
@@ -26,47 +27,31 @@ class MinnaController extends Controller
      */
     public function show($number)
     {
-        $lesson = MinnaLesson::select('id', 'number', 'title', 'description')
-            ->where('number', $number)
-            ->with(['sections' => function($query) {
-                $query->select('id', 'lesson_id', 'order_index', 'key', 'title', 'content', 'media_url')
-                      ->orderBy('order_index');
-            }])
-            ->firstOrFail();
+        try {
+            $lesson = $this->minnaService->getLessonByNumber($number);
+            $sectionsByKey = $this->minnaService->groupSectionsByKey($lesson->sections);
+            $previousLessonNumber = $this->minnaService->getPreviousLessonNumber($lesson->number);
+            $nextLessonNumber = $this->minnaService->getNextLessonNumber($lesson->number);
 
-        // Nhóm sections theo key để dễ hiển thị và giữ nhiều block cùng loại
-        $sectionsByKey = $lesson->sections
-            ->groupBy('key');
-
-        $previousLessonNumber = MinnaLesson::where('number', '<', $lesson->number)
-            ->orderByDesc('number')
-            ->value('number');
-
-        $nextLessonNumber = MinnaLesson::where('number', '>', $lesson->number)
-            ->orderBy('number')
-            ->value('number');
-
-        return view('minna.show', compact('lesson', 'sectionsByKey', 'previousLessonNumber', 'nextLessonNumber'));
+            return view('minna.show', compact('lesson', 'sectionsByKey', 'previousLessonNumber', 'nextLessonNumber'));
+        } catch (InvalidArgumentException $e) {
+            abort(404, $e->getMessage());
+        }
     }
 
     /**
      * Hiển thị một section cụ thể của bài học
-     * Tối ưu: Gộp 2 queries thành 1 bằng join
      */
     public function showSection($number, $sectionKey)
     {
-        // Gộp 2 queries thành 1 bằng join để tránh N+1
-        $section = MinnaSection::select('id', 'lesson_id', 'order_index', 'key', 'title', 'content', 'media_url')
-            ->whereHas('lesson', function($query) use ($number) {
-                $query->where('number', $number);
-            })
-            ->where('key', $sectionKey)
-            ->with('lesson:id,number,title,description')
-            ->firstOrFail();
-        
-        $lesson = $section->lesson;
+        try {
+            $section = $this->minnaService->getSectionByLessonAndKey($number, $sectionKey);
+            $lesson = $section->lesson;
 
-        return view('minna.section', compact('lesson', 'section'));
+            return view('minna.section', compact('lesson', 'section'));
+        } catch (InvalidArgumentException $e) {
+            abort(404, $e->getMessage());
+        }
     }
 }
 

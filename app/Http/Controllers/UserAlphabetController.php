@@ -2,38 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Alphabet;
-use App\Models\Kanji;
+use App\Services\AlphabetService;
 use Illuminate\Http\Request;
 
 class UserAlphabetController extends Controller
 {
+    public function __construct(
+        private AlphabetService $alphabetService
+    ) {}
+
     public function index()
     {
-        // Gộp tất cả queries alphabet thành 1 query duy nhất
-        $alphabets = Alphabet::whereIn('type', ['hiragana', 'katakana', 'romaji'])
-            ->select('id', 'character', 'romaji', 'type', 'category')
-            ->orderBy('type')
-            ->orderBy('character')
-            ->get();
+        // Lấy alphabets
+        $alphabets = $this->alphabetService->getAlphabetsByTypes(['hiragana', 'katakana', 'romaji']);
+        $groupedAlphabets = $this->alphabetService->groupAlphabetsByType($alphabets);
         
-        // Chia theo type
-        $hiragana = $alphabets->where('type', 'hiragana')->values();
-        $katakana = $alphabets->where('type', 'katakana')->values();
-        $romaji = $alphabets->where('type', 'romaji')->values();
+        // Lấy kanjis
+        $kanjis = $this->alphabetService->getKanjisByLevels(['N5', 'N4', 'N3']);
+        $groupedKanjis = $this->alphabetService->groupKanjisByLevel($kanjis);
         
-        // Gộp tất cả queries kanji thành 1 query duy nhất
-        $kanjis = Kanji::whereIn('level', ['N5', 'N4', 'N3'])
-            ->select('id', 'character', 'meaning', 'on_reading', 'kun_reading', 'level', 'stroke_count', 'radical', 'examples')
-            ->orderBy('level')
-            ->orderBy('character')
-            ->get();
-        
-        // Chia theo level
-        $kanjiN5 = $kanjis->where('level', 'N5')->values();
-        $kanjiN4 = $kanjis->where('level', 'N4')->values();
-        $kanjiN3 = $kanjis->where('level', 'N3')->values();
-        
-        return view('user.alphabet.alphabet', compact('hiragana', 'katakana', 'romaji', 'kanjiN5', 'kanjiN4', 'kanjiN3'));
+        return view('user.alphabet.alphabet', [
+            'hiragana' => $groupedAlphabets['hiragana'],
+            'katakana' => $groupedAlphabets['katakana'],
+            'romaji' => $groupedAlphabets['romaji'],
+            'kanjiN5' => $groupedKanjis['N5'],
+            'kanjiN4' => $groupedKanjis['N4'],
+            'kanjiN3' => $groupedKanjis['N3'],
+        ]);
     }
 }

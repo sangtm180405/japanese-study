@@ -4,35 +4,28 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kanji;
+use App\Services\KanjiService;
 use App\Http\Requests\StoreKanjiRequest;
 use App\Http\Requests\UpdateKanjiRequest;
 use Illuminate\Http\Request;
 
 class KanjiController extends Controller
 {
+    public function __construct(
+        private KanjiService $kanjiService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = Kanji::query();
+        $query = $this->kanjiService->getKanjisWithFilters(
+            $request->get('level'),
+            $request->get('search')
+        );
 
-        // Filter by level
-        if ($request->has('level') && $request->level) {
-            $query->byLevel($request->level);
-        }
-
-        // Search by character, meaning, or reading
-        if ($request->has('search') && $request->search) {
-            $query->where(function($q) use ($request) {
-                $q->where('character', 'like', '%' . $request->search . '%')
-                  ->orWhere('meaning', 'like', '%' . $request->search . '%')
-                  ->orWhere('on_reading', 'like', '%' . $request->search . '%')
-                  ->orWhere('kun_reading', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        $kanjis = $query->orderBy('level')->orderBy('character')->paginate(20);
+        $kanjis = $query->paginate(20);
 
         return view('admin.kanjis.index', compact('kanjis'));
     }

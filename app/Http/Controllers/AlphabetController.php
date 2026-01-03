@@ -3,33 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alphabet;
+use App\Services\AlphabetService;
 use App\Http\Requests\StoreAlphabetRequest;
 use App\Http\Requests\UpdateAlphabetRequest;
 use Illuminate\Http\Request;
 
 class AlphabetController extends Controller
 {
+    public function __construct(
+        private AlphabetService $alphabetService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = Alphabet::query();
+        $query = $this->alphabetService->getAlphabetsWithFilters(
+            $request->get('type'),
+            $request->get('search')
+        );
 
-        // Lọc theo loại
-        if ($request->has('type') && $request->type) {
-            $query->byType($request->type);
-        }
-
-        // Tìm kiếm theo ký tự hoặc romaji
-        if ($request->has('search') && $request->search) {
-            $query->where(function($q) use ($request) {
-                $q->where('character', 'like', '%' . $request->search . '%')
-                  ->orWhere('romaji', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        $alphabets = $query->orderBy('type')->orderBy('character')->paginate(20);
+        $alphabets = $query->paginate(20);
 
         return view('admin.alphabets.index', compact('alphabets'));
     }
