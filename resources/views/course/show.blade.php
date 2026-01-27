@@ -51,7 +51,7 @@
             <div class="max-w-6xl mx-auto">
                 <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">Nội dung khóa học</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach($courseData['sections'] as $index => $section)
+                    @foreach(($courseData['sections'] ?? []) as $index => $section)
                     <div class="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition {{ $courseData['borderColor'] }} border-2 group cursor-pointer">
                         <div class="flex flex-col items-center text-center">
                             <div class="text-5xl mb-4 group-hover:scale-110 transition-transform">
