@@ -24,7 +24,9 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Bài học đã học</p>
-                            <p class="text-2xl font-bold text-gray-900">0</p>
+                            <p class="text-2xl font-bold text-gray-900">
+                                {{ $completedMinnaLessons ?? 0 }}
+                            </p>
                         </div>
                         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,8 +39,10 @@
                 <div class="bg-white rounded-lg p-6 border border-gray-200">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600 mb-1">Kanji đã học</p>
-                            <p class="text-2xl font-bold text-gray-900">0</p>
+                            <p class="text-sm text-gray-600 mb-1">Tổng số Kanji</p>
+                            <p class="text-2xl font-bold text-gray-900">
+                                {{ $totalKanjis ?? 0 }}
+                            </p>
                         </div>
                         <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +56,9 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Ngày học liên tiếp</p>
-                            <p class="text-2xl font-bold text-gray-900">0</p>
+                            <p class="text-2xl font-bold text-gray-900">
+                                {{ $currentStreak ?? 0 }}
+                            </p>
                         </div>
                         <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,21 +88,28 @@
                     <div class="space-y-4">
                         <div>
                             <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-600">Bảng chữ cái</span>
-                                <span class="text-gray-900 font-medium">0%</span>
+                                <span class="text-gray-600">Minna no Nihongo</span>
+                                <span class="text-gray-900 font-medium">
+                                    {{ $minnaProgressPercent ?? 0 }}%
+                                </span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-red-600 h-2 rounded-full" style="width: 0%"></div>
+                                <div
+                                    class="bg-blue-600 h-2 rounded-full"
+                                    style="width: {{ $minnaProgressPercent ?? 0 }}%"
+                                ></div>
                             </div>
                         </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-gray-600">Minna no Nihongo</span>
-                                <span class="text-gray-900 font-medium">0%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
-                            </div>
+                        <div class="pt-1">
+                            <a
+                                href="{{ route('user.progress') }}"
+                                class="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                                Xem chi tiết tiến độ
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
                         </div>
                     </div>
                 </div>

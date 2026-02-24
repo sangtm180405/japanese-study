@@ -304,6 +304,18 @@
                 ✕
             </button>
 
+            <!-- Nút qua lại -->
+            <button type="button" id="prevCharBtn"
+                    class="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 hover:text-gray-900 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Chữ trước">
+                ←
+            </button>
+            <button type="button" id="nextCharBtn"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 hover:text-gray-900 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Chữ sau">
+                →
+            </button>
+
             <div class="flex flex-col items-center text-center gap-4 md:gap-6">
                 <div id="modalCharText"
                      class="japanese-font text-6xl md:text-7xl mt-2 mb-1 text-gray-900">
@@ -343,6 +355,12 @@
             // Show selected content
             document.getElementById(type).classList.remove('hidden');
         }
+
+        // Danh sách ký tự có thứ tự để điều hướng prev/next (Hiragana, Katakana)
+        const HIRAGANA_ORDER = @json(array_values(array_filter($hiraganaOrder ?? [])));
+        const KATAKANA_ORDER = @json(array_values(array_filter($katakanaOrder ?? [])));
+        const HIRAGANA_MAP = @json($hiragana->keyBy('character')->map(fn($a) => $a->romaji)->toArray());
+        const KATAKANA_MAP = @json($katakana->keyBy('character')->map(fn($a) => $a->romaji)->toArray());
 
         // Dữ liệu Kanji dưới dạng JSON, chỉ dùng khi người dùng chọn cấp
         // Ở đây truyền thẳng model sang JS, sau đó dùng các field: character, meaning, on_reading, kun_reading
@@ -417,11 +435,65 @@
         let currentChar = null;
         let currentReading = '';
         let currentType = null;
+        let currentSection = null;  // 'hiragana' | 'katakana' | 'kanji'
+        let currentIndex = -1;
+
+        function getCharList() {
+            if (currentSection === 'hiragana') return HIRAGANA_ORDER || [];
+            if (currentSection === 'katakana') return KATAKANA_ORDER || [];
+            if (currentSection === 'kanji' && currentLevel) return (KANJI[currentLevel] || []).map(k => k.character);
+            return [];
+        }
+
+        function getReadingForChar(char, section) {
+            if (section === 'hiragana') return (HIRAGANA_MAP || {})[char] || '';
+            if (section === 'katakana') return (KATAKANA_MAP || {})[char] || '';
+            if (section === 'kanji' && currentLevel) {
+                const k = (KANJI[currentLevel] || []).find(x => x.character === char);
+                return k ? ((k.on_reading || '') + (k.kun_reading ? ' ・ ' + k.kun_reading : '')) : '';
+            }
+            return '';
+        }
+
+        function getMeaningForKanji(char) {
+            if (currentSection !== 'kanji' || !currentLevel) return '';
+            const k = (KANJI[currentLevel] || []).find(x => x.character === char);
+            return k ? (k.meaning || '') : '';
+        }
+
+        function updateNavButtons() {
+            const list = getCharList();
+            const prevBtn = document.getElementById('prevCharBtn');
+            const nextBtn = document.getElementById('nextCharBtn');
+            if (!prevBtn || !nextBtn) return;
+            const canNav = list.length > 0 && currentIndex >= 0;
+            prevBtn.style.visibility = canNav ? 'visible' : 'hidden';
+            nextBtn.style.visibility = canNav ? 'visible' : 'hidden';
+            prevBtn.disabled = !canNav || currentIndex <= 0;
+            nextBtn.disabled = !canNav || currentIndex >= list.length - 1;
+        }
 
         function openCharModal(char, type, reading) {
             currentChar = char;
             currentReading = reading || '';
             currentType = type;
+
+            // Xác định section và index cho điều hướng
+            const code = (char || '').charCodeAt(0);
+            if (type === 'kanji' && currentLevel) {
+                currentSection = 'kanji';
+                const list = (KANJI[currentLevel] || []).map(k => k.character);
+                currentIndex = list.indexOf(char);
+            } else if (code >= 0x3040 && code <= 0x309F) {
+                currentSection = 'hiragana';
+                currentIndex = (HIRAGANA_ORDER || []).indexOf(char);
+            } else if (code >= 0x30A0 && code <= 0x30FF) {
+                currentSection = 'katakana';
+                currentIndex = (KATAKANA_ORDER || []).indexOf(char);
+            } else {
+                currentSection = null;
+                currentIndex = -1;
+            }
 
             modalCharText.textContent = char || '';
             modalReading.textContent = currentReading ? ('Cách đọc: ' + currentReading) : '';
@@ -488,6 +560,7 @@
                 }
             }
 
+            updateNavButtons();
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
@@ -504,6 +577,32 @@
         modal.addEventListener('click', function (e) {
             if (e.target === modal) {
                 closeCharModal();
+            }
+        });
+
+        document.getElementById('prevCharBtn').addEventListener('click', function (e) {
+            e.stopPropagation();
+            const list = getCharList();
+            if (currentIndex <= 0) return;
+            const char = list[currentIndex - 1];
+            const reading = currentSection === 'kanji' ? getReadingForChar(char, 'kanji') : getReadingForChar(char, currentSection);
+            if (currentSection === 'kanji') {
+                openCharModal(char, 'kanji', reading);
+            } else {
+                openCharModal(char, 'kana', reading);
+            }
+        });
+
+        document.getElementById('nextCharBtn').addEventListener('click', function (e) {
+            e.stopPropagation();
+            const list = getCharList();
+            if (currentIndex < 0 || currentIndex >= list.length - 1) return;
+            const char = list[currentIndex + 1];
+            const reading = currentSection === 'kanji' ? getReadingForChar(char, 'kanji') : getReadingForChar(char, currentSection);
+            if (currentSection === 'kanji') {
+                openCharModal(char, 'kanji', reading);
+            } else {
+                openCharModal(char, 'kana', reading);
             }
         });
 

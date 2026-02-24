@@ -26,6 +26,10 @@ Route::get('/dashboard', [App\Http\Controllers\UserController::class, 'dashboard
     ->middleware('auth')
     ->name('user.dashboard');
 
+Route::get('/dashboard/progress', [App\Http\Controllers\UserController::class, 'progress'])
+    ->middleware('auth')
+    ->name('user.progress');
+
 Route::get('/alphabet', [App\Http\Controllers\UserAlphabetController::class, 'index'])->name('alphabet.index');
 
 // Course Routes
@@ -41,6 +45,10 @@ Route::prefix('minna')->name('minna.')->group(function () {
     Route::get('/', [App\Http\Controllers\MinnaController::class, 'index'])->name('index');
     Route::get('/bai-{number}', [App\Http\Controllers\MinnaController::class, 'show'])->name('show');
     Route::get('/bai-{number}/{sectionKey}', [App\Http\Controllers\MinnaController::class, 'showSection'])->name('section');
+
+    Route::post('/bai-{number}/hoan-thanh', [App\Http\Controllers\MinnaController::class, 'complete'])
+        ->middleware('auth')
+        ->name('complete');
 });
 
 // Admin Routes

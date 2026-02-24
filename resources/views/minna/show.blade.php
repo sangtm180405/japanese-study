@@ -80,7 +80,7 @@
 
         <!-- Lesson Header Card -->
         <div class="bg-white rounded-2xl shadow-xl p-4 md:p-6 lg:p-8 mb-6 md:mb-8 border border-gray-100">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-4">
                 <div class="flex-1">
                     <div class="flex items-center gap-2 md:gap-3 mb-3">
                         <span class="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-red-600 to-red-700 text-white text-lg md:text-xl font-bold rounded-xl shadow-lg flex-shrink-0">
@@ -92,6 +92,48 @@
                         <p class="text-gray-600 text-sm md:text-base lg:text-lg ml-0 md:ml-14 lg:ml-16">{{ $lesson->description }}</p>
                     @endif
                 </div>
+
+                @auth
+                    <div class="w-full md:w-auto">
+                        @php
+                            $isCompleted = isset($progress) && $progress && $progress->status === \App\Models\UserProgress::STATUS_COMPLETED;
+                        @endphp
+                        <div class="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200">
+                            <p class="text-xs md:text-sm font-semibold text-gray-700 mb-2">Tiến độ bài học</p>
+                            <div class="flex items-center gap-3">
+                                @if($isCompleted)
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        Đã hoàn thành
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l2 2m6-4a8 8 0 11-16 0 8 8 0 0116 0z"></path>
+                                        </svg>
+                                        Đang học
+                                    </span>
+                                @endif
+
+                                @if(! $isCompleted)
+                                    <form method="POST" action="{{ route('minna.complete', ['number' => $lesson->number]) }}" class="ml-auto">
+                                        @csrf
+                                        <button
+                                            type="submit"
+                                            class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-sm hover:shadow-md transition-all">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            Đánh dấu hoàn thành
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endauth
             </div>
         </div>
 
@@ -148,14 +190,20 @@
                         @endforelse
                     </nav>
 
-                    <!-- Progress Indicator (Optional) -->
+                    <!-- Progress Indicator -->
                     <div class="mt-8 pt-6 border-t border-gray-200">
+                        @php
+                            $progressPercent = 0;
+                            if(isset($progress) && $progress) {
+                                $progressPercent = $progress->status === \App\Models\UserProgress::STATUS_COMPLETED ? 100 : 50;
+                            }
+                        @endphp
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-sm font-medium text-gray-600">Tiến độ học tập</span>
-                            <span class="text-sm font-bold text-red-600">0%</span>
+                            <span class="text-sm font-bold text-red-600">{{ $progressPercent }}%</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-gradient-to-r from-red-600 to-red-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            <div class="bg-gradient-to-r from-red-600 to-red-500 h-2 rounded-full transition-all duration-300" style="width: {{ $progressPercent }}%"></div>
                         </div>
                     </div>
                 </div>
@@ -275,6 +323,42 @@
     @include('layouts.footer')
 
     <script>
+        // Back to top button
+        (function () {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.innerHTML = `
+                <span class="sr-only">Lên đầu trang</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                </svg>
+            `;
+            btn.id = 'back-to-top';
+            btn.className = 'fixed z-40 right-4 bottom-4 md:right-6 md:bottom-6 w-10 h-10 md:w-11 md:h-11 rounded-full bg-red-600 text-white shadow-lg flex items-center justify-center opacity-0 pointer-events-none translate-y-4 transition-all duration-300 hover:bg-red-700';
+
+            document.body.appendChild(btn);
+
+            const toggleVisibility = () => {
+                const header = document.getElementById('main-header');
+                const offset = (header ? header.offsetHeight : 80) + 200;
+                const scrolledPastHeader = window.scrollY > offset;
+
+                const nearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 200);
+
+                if (scrolledPastHeader && !nearBottom) {
+                    btn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+                } else {
+                    btn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                }
+            };
+
+            window.addEventListener('scroll', toggleVisibility);
+
+            btn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+
         function showSection(sectionKey) {
             // Hide all sections with smooth fade out
             document.querySelectorAll('.section-content').forEach(section => {

@@ -6,7 +6,7 @@
             <a href="{{ route('home') }}" class="flex items-center space-x-3 group flex-shrink-0">
                 <div class="relative">
                     <div class="absolute inset-0 bg-gradient-to-br from-red-600 to-red-700 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <img src="{{ asset('images/logo/3.jpg') }}"
+                    <img src="{{ asset('images/logo/yamato.jpg') }}"
                          alt="Logo"
                          class="relative w-14 h-14 rounded-xl object-cover ring-2 ring-white shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                 </div>
@@ -43,17 +43,6 @@
                     @endif
                 </a>
                 @auth
-                <a href="{{ route('user.dashboard') }}"
-                   class="relative px-4 py-2 text-sm font-medium transition-all duration-300 group">
-                    <span class="relative z-10 {{ request()->routeIs('user.dashboard') ? 'text-red-600' : 'text-gray-700 group-hover:text-gray-900' }}">
-                        Dashboard
-                    </span>
-                    @if(request()->routeIs('user.dashboard'))
-                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-600 to-red-700 rounded-full"></span>
-                    @else
-                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-600 to-red-700 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
-                    @endif
-                </a>
                 @endauth
                 <a href="{{ route('minna.index') }}"
                    class="relative px-4 py-2 text-sm font-medium transition-all duration-300 group">
@@ -84,7 +73,7 @@
                 @auth
                     <!-- User Menu Desktop -->
                     <div class="hidden lg:flex items-center space-x-4">
-                        <div class="flex items-center space-x-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors duration-300">
+                        <a href="{{ route('user.dashboard') }}" class="flex items-center space-x-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors duration-300">
                             <div class="w-9 h-9 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
                                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                             </div>
@@ -98,7 +87,7 @@
                                     <p class="text-xs text-gray-500">Người Dùng</p>
                                 @endif
                             </div>
-                        </div>
+                        </a>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button type="submit" 
@@ -158,13 +147,6 @@
                 Tổng hợp N
             </a>
             @auth
-            <a href="{{ route('user.dashboard') }}"
-               class="flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 {{ request()->routeIs('user.dashboard') ? 'bg-red-50 text-red-600' : 'text-gray-700 hover:bg-gray-50 hover:text-red-600' }}">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-                Dashboard
-            </a>
             @endauth
             <a href="{{ route('minna.index') }}"
                class="flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 {{ request()->routeIs('minna.*') ? 'bg-red-50 text-red-600' : 'text-gray-700 hover:bg-gray-50 hover:text-red-600' }}">
@@ -183,7 +165,7 @@
 
             @auth
                 <div class="pt-4 mt-4 border-t border-gray-200">
-                    <div class="px-4 py-3 mb-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
+                    <a href="{{ route('user.dashboard') }}" class="block px-4 py-3 mb-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg hover:bg-gray-100 transition-colors duration-300">
                         <div class="flex items-center space-x-3">
                             <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center text-white font-semibold shadow-md">
                                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
@@ -199,7 +181,7 @@
                                 @endif
                             </div>
                         </div>
-                    </div>
+                    </a>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit"
