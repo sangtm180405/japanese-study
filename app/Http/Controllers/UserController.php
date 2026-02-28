@@ -57,6 +57,7 @@ class UserController extends Controller
             ->count();
         $dailyGoalPercent = min(100, (int) round(($todayCompletedMinnaLessons / $dailyGoalTarget) * 100));
         $isDailyGoalCompleted = $todayCompletedMinnaLessons >= $dailyGoalTarget;
+        $remainingDailyLessons = max(0, $dailyGoalTarget - $todayCompletedMinnaLessons);
 
         $minnaProgressPercent = $totalMinnaLessons > 0
             ? round(($completedMinnaLessons / $totalMinnaLessons) * 100)
@@ -101,7 +102,8 @@ class UserController extends Controller
             'dailyGoalTarget',
             'todayCompletedMinnaLessons',
             'dailyGoalPercent',
-            'isDailyGoalCompleted'
+            'isDailyGoalCompleted',
+            'remainingDailyLessons'
         ));
     }
 

@@ -18,6 +18,38 @@
                 <p class="text-gray-600">Chào mừng bạn đến với dashboard của bạn</p>
             </div>
 
+            @if(!$isDailyGoalCompleted)
+                <div class="mb-8 rounded-lg border border-amber-300 bg-amber-50 p-4 md:p-5">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-semibold text-amber-800">Nhắc học hôm nay</p>
+                            <p class="text-sm text-amber-700 mt-1">
+                                Bạn còn {{ $remainingDailyLessons }} bài Minna để hoàn thành mục tiêu hôm nay.
+                            </p>
+                        </div>
+                        @if($resumeMinnaLesson)
+                            <a href="{{ route('minna.show', ['number' => $resumeMinnaLesson->number]) }}" class="inline-flex items-center justify-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md transition">
+                                Học ngay bài {{ $resumeMinnaLesson->number }}
+                            </a>
+                        @elseif($firstMinnaLesson)
+                            <a href="{{ route('minna.show', ['number' => $firstMinnaLesson->number]) }}" class="inline-flex items-center justify-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md transition">
+                                Bắt đầu học ngay
+                            </a>
+                        @else
+                            <a href="{{ route('minna.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md transition">
+                                Vào khu vực Minna
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            @else
+                <div class="mb-8 rounded-lg border border-green-300 bg-green-50 p-4 md:p-5">
+                    <p class="text-sm font-semibold text-green-700">
+                        Hoàn thành mục tiêu hôm nay. Tiếp tục giữ streak nhé!
+                    </p>
+                </div>
+            @endif
+
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white rounded-lg p-6 border border-gray-200">
