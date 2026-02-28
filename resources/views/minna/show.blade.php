@@ -141,9 +141,10 @@
             <!-- Sidebar Navigation -->
             <aside class="w-full lg:w-80 flex-shrink-0">
                 <div class="bg-white rounded-2xl shadow-xl p-4 md:p-6 sticky-sidebar border border-gray-100">
-                    <h2 class="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 pb-3 md:pb-4 border-b-2 border-red-600">
-                        📚 Nội dung bài học
-                    </h2>
+                    <div class="flex items-center justify-between mb-4 md:mb-6 pb-3 md:pb-4 border-b-2 border-red-600">
+                        <h2 class="text-lg md:text-xl font-bold text-gray-900">📚 Nội dung bài học</h2>
+                        <a href="{{ route('flashcard.study', $lesson->number) }}" class="text-xs font-semibold text-red-600 hover:text-red-700 whitespace-nowrap">Ôn Flashcard</a>
+                    </div>
                     <nav class="space-y-2" id="section-nav">
                         @php
                             $sectionTitles = [

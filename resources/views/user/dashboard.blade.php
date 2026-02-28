@@ -109,6 +109,9 @@
                         <a href="{{ route('alphabet.index') }}" class="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-2.5 rounded transition">
                             Học bảng chữ cái
                         </a>
+                        <a href="{{ route('flashcard.index') }}" class="block w-full bg-amber-600 hover:bg-amber-700 text-white text-center py-2.5 rounded transition">
+                            Ôn Flashcard
+                        </a>
                         @if($resumeMinnaLesson)
                             <a href="{{ route('minna.show', ['number' => $resumeMinnaLesson->number]) }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2.5 rounded transition">
                                 Học tiếp Minna - Bài {{ $resumeMinnaLesson->number }}
