@@ -34,6 +34,7 @@ Route::get('/alphabet', [App\Http\Controllers\UserAlphabetController::class, 'in
 
 Route::get('/flashcard', [App\Http\Controllers\FlashcardController::class, 'index'])->name('flashcard.index');
 Route::get('/flashcard/bai-{number}', [App\Http\Controllers\FlashcardController::class, 'study'])->name('flashcard.study');
+Route::get('/flashcard/study', [App\Http\Controllers\FlashcardController::class, 'study'])->name('flashcard.study.multi');
 
 // Course Routes
 Route::get('/courses', [App\Http\Controllers\CourseController::class, 'index'])->name('course.index');

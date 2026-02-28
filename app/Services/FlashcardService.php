@@ -2,45 +2,78 @@
 
 namespace App\Services;
 
-use App\Models\MinnaLesson;
 use App\Models\MinnaSection;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class FlashcardService
 {
     private const VOCAB_KEYS = ['vocab', 'mau_cau', 'countries', 'proper_nouns', 'cau', 'places', 'rail'];
     private const LOAI_TU = ['danh_tu' => 'Danh từ', 'dong_tu' => 'Động từ', 'tinh_tu' => 'Tính từ'];
+    private const CACHE_TTL = 600;
 
-    /** Danh sách bài có từ vựng + số thẻ */
+    /** Danh sách bài có từ vựng + số thẻ (có cache) */
     public function getLessonsWithVocabCount(): Collection
     {
-        return MinnaSection::where('key', 'tu-vung')
-            ->whereNotNull('content')
-            ->with('lesson:id,number,title')
-            ->get()
-            ->map(function (MinnaSection $s) {
-                $count = $this->countCards($s->content ?? []);
-                return $s->lesson ? ['lesson' => $s->lesson, 'count' => $count] : null;
-            })
-            ->filter()
-            ->values();
+        return Cache::remember('flashcard:lessons', self::CACHE_TTL, function () {
+            return MinnaSection::select('id', 'lesson_id', 'content')
+                ->where('key', 'tu-vung')
+                ->whereNotNull('content')
+                ->with('lesson:id,number,title')
+                ->get()
+                ->map(function (MinnaSection $s) {
+                    $count = $this->countCards($s->content ?? []);
+                    return $s->lesson ? ['lesson' => $s->lesson, 'count' => $count] : null;
+                })
+                ->filter()
+                ->values();
+        });
     }
 
-    /** Flashcard theo bài */
-    public function getFlashcardsByLesson(int $number): array
+    /** Flashcard theo 1 hoặc nhiều bài */
+    public function getFlashcardsByLessons(array $numbers, bool $shuffle = false): array
     {
-        $section = MinnaSection::where('key', 'tu-vung')
-            ->whereHas('lesson', fn ($q) => $q->where('number', $number))
-            ->with('lesson:id,number,title')
-            ->first();
+        $numbers = array_filter(array_map('intval', $numbers));
+        if (empty($numbers)) {
+            return ['lessons' => [], 'cards' => []];
+        }
 
-        if (!$section?->lesson) {
-            return ['lesson' => null, 'cards' => []];
+        $sections = MinnaSection::where('key', 'tu-vung')
+            ->whereHas('lesson', fn ($q) => $q->whereIn('number', $numbers))
+            ->with('lesson:id,number,title')
+            ->orderBy('lesson_id')
+            ->get();
+
+        $lessons = [];
+        $allCards = [];
+        foreach ($sections as $section) {
+            if (!$section->lesson) continue;
+            $cards = $this->extractCards($section->content ?? []);
+            foreach ($cards as $c) {
+                $c['lesson_number'] = $section->lesson->number;
+                $allCards[] = $c;
+            }
+            $lessons[$section->lesson->number] = $section->lesson;
+        }
+        $lessons = array_values($lessons);
+
+        if ($shuffle) {
+            shuffle($allCards);
         }
 
         return [
-            'lesson' => $section->lesson,
-            'cards' => $this->extractCards($section->content ?? []),
+            'lessons' => $lessons,
+            'cards' => $allCards,
+        ];
+    }
+
+    /** @deprecated Dùng getFlashcardsByLessons([$number]) thay thế */
+    public function getFlashcardsByLesson(int $number): array
+    {
+        $r = $this->getFlashcardsByLessons([$number], false);
+        return [
+            'lesson' => $r['lessons'][0] ?? null,
+            'cards' => $r['cards'],
         ];
     }
 
