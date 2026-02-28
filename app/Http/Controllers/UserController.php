@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\MinnaLesson;
 use App\Models\UserProgress;
 use App\Models\Kanji;
+use App\Services\StatisticsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private StatisticsService $statisticsService
+    ) {}
     public function dashboard()
     {
         $user = Auth::user();
@@ -126,6 +130,25 @@ class UserController extends Controller
             'user' => $user,
             'minnaProgresses' => $minnaProgresses,
             'lessons' => $lessons,
+        ]);
+    }
+
+    /**
+     * Thống kê chi tiết: biểu đồ theo ngày, tuần, tổng bài/từ
+     */
+    public function statistics()
+    {
+        $user = Auth::user();
+
+        $byDay = $this->statisticsService->getLessonsCompletedByDay($user, 7);
+        $byWeek = $this->statisticsService->getLessonsCompletedByWeek($user, 8);
+        $summary = $this->statisticsService->getSummary($user);
+
+        return view('user.statistics', [
+            'user' => $user,
+            'byDay' => $byDay,
+            'byWeek' => $byWeek,
+            'summary' => $summary,
         ]);
     }
 }

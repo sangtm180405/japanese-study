@@ -30,6 +30,10 @@ Route::get('/dashboard/progress', [App\Http\Controllers\UserController::class, '
     ->middleware('auth')
     ->name('user.progress');
 
+Route::get('/dashboard/statistics', [App\Http\Controllers\UserController::class, 'statistics'])
+    ->middleware('auth')
+    ->name('user.statistics');
+
 Route::get('/alphabet', [App\Http\Controllers\UserAlphabetController::class, 'index'])->name('alphabet.index');
 
 Route::get('/flashcard', [App\Http\Controllers\FlashcardController::class, 'index'])->name('flashcard.index');

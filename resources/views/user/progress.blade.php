@@ -22,9 +22,14 @@
                         Xem lại các bài Minna no Nihongo bạn đã học và hoàn thành.
                     </p>
                 </div>
-                <a href="{{ route('user.dashboard') }}" class="inline-flex items-center text-sm text-blue-600 hover:text-blue-700">
-                    &larr; Quay lại dashboard
-                </a>
+                <div class="flex gap-3">
+                    <a href="{{ route('user.statistics') }}" class="inline-flex items-center text-sm text-red-600 hover:text-red-700">
+                        Thống kê chi tiết
+                    </a>
+                    <a href="{{ route('user.dashboard') }}" class="inline-flex items-center text-sm text-blue-600 hover:text-blue-700">
+                        &larr; Dashboard
+                    </a>
+                </div>
             </div>
 
             <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">

@@ -77,6 +77,23 @@ class FlashcardService
         ];
     }
 
+    /** Tổng số từ vựng (thẻ) của các bài theo lesson_id - dùng cho thống kê */
+    public function getTotalVocabCountByLessonIds(array $lessonIds): int
+    {
+        if (empty($lessonIds)) {
+            return 0;
+        }
+        $sections = MinnaSection::select('id', 'content')
+            ->where('key', 'tu-vung')
+            ->whereIn('lesson_id', $lessonIds)
+            ->get();
+        $total = 0;
+        foreach ($sections as $section) {
+            $total += $this->countCards($section->content ?? []);
+        }
+        return $total;
+    }
+
     private function countCards(array $content): int
     {
         $n = 0;
