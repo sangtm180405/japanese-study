@@ -36,6 +36,13 @@ Route::get('/dashboard/statistics', [App\Http\Controllers\UserController::class,
 
 Route::get('/alphabet', [App\Http\Controllers\UserAlphabetController::class, 'index'])->name('alphabet.index');
 
+// Ôn Kanji theo cấp (N5–N1)
+Route::prefix('kanji')->name('kanji.')->group(function () {
+    Route::get('/', [App\Http\Controllers\UserKanjiController::class, 'index'])->name('index');
+    Route::get('/{level}', [App\Http\Controllers\UserKanjiController::class, 'list'])->name('list')->where('level', 'N[1-5]');
+    Route::get('/{level}/flashcard', [App\Http\Controllers\UserKanjiController::class, 'flashcard'])->name('flashcard')->where('level', 'N[1-5]');
+});
+
 Route::get('/flashcard', [App\Http\Controllers\FlashcardController::class, 'index'])->name('flashcard.index');
 Route::get('/flashcard/bai-{number}', [App\Http\Controllers\FlashcardController::class, 'study'])->name('flashcard.study');
 Route::get('/flashcard/study', [App\Http\Controllers\FlashcardController::class, 'study'])->name('flashcard.study.multi');
