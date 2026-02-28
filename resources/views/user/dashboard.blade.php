@@ -77,9 +77,25 @@
                         <a href="{{ route('alphabet.index') }}" class="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-2.5 rounded transition">
                             Học bảng chữ cái
                         </a>
-                        <a href="{{ route('minna.index') }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2.5 rounded transition">
-                            Bài học Minna no Nihongo
-                        </a>
+                        @if($resumeMinnaLesson)
+                            <a href="{{ route('minna.show', ['number' => $resumeMinnaLesson->number]) }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2.5 rounded transition">
+                                Học tiếp Minna - Bài {{ $resumeMinnaLesson->number }}
+                            </a>
+                        @elseif($firstMinnaLesson)
+                            <a href="{{ route('minna.show', ['number' => $firstMinnaLesson->number]) }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2.5 rounded transition">
+                                Bắt đầu Minna - Bài {{ $firstMinnaLesson->number }}
+                            </a>
+                        @else
+                            <a href="{{ route('minna.index') }}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2.5 rounded transition">
+                                Bài học Minna no Nihongo
+                            </a>
+                        @endif
+
+                        @if($latestMinnaAccessAt)
+                            <p class="text-xs text-gray-500">
+                                Lần học Minna gần nhất: {{ $latestMinnaAccessAt->format('d/m/Y H:i') }}
+                            </p>
+                        @endif
                     </div>
                 </div>
 
@@ -110,6 +126,24 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                 </svg>
                             </a>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-100">
+                            <div class="flex items-center justify-between text-sm mb-1">
+                                <span class="text-gray-600">Mục tiêu hôm nay</span>
+                                <span class="font-medium {{ $isDailyGoalCompleted ? 'text-green-600' : 'text-gray-900' }}">
+                                    {{ min($todayCompletedMinnaLessons, $dailyGoalTarget) }}/{{ $dailyGoalTarget }} bài
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                    class="{{ $isDailyGoalCompleted ? 'bg-green-600' : 'bg-amber-500' }} h-2 rounded-full"
+                                    style="width: {{ $dailyGoalPercent }}%"
+                                ></div>
+                            </div>
+                            <p class="text-xs mt-2 {{ $isDailyGoalCompleted ? 'text-green-600' : 'text-gray-500' }}">
+                                {{ $isDailyGoalCompleted ? 'Bạn đã hoàn thành mục tiêu hôm nay.' : 'Hoàn thành ít nhất 1 bài Minna trong ngày để giữ phong độ học.' }}
+                            </p>
                         </div>
                     </div>
                 </div>

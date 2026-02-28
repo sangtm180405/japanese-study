@@ -16,6 +16,9 @@ class UserController extends Controller
         $user = Auth::user();
 
         $totalMinnaLessons = MinnaLesson::count();
+        $firstMinnaLesson = MinnaLesson::query()
+            ->orderBy('number')
+            ->first();
 
         $completedMinnaLessons = UserProgress::query()
             ->where('user_id', $user->id)
@@ -28,6 +31,32 @@ class UserController extends Controller
             ->where('lesson_type', UserProgress::TYPE_MINNA)
             ->where('status', UserProgress::STATUS_IN_PROGRESS)
             ->count();
+
+        $latestMinnaProgress = UserProgress::query()
+            ->where('user_id', $user->id)
+            ->where('lesson_type', UserProgress::TYPE_MINNA)
+            ->orderByDesc('last_accessed_at')
+            ->orderByDesc('updated_at')
+            ->first();
+
+        $resumeMinnaLesson = null;
+        $latestMinnaAccessAt = null;
+        if ($latestMinnaProgress) {
+            $resumeMinnaLesson = MinnaLesson::query()
+                ->where('id', $latestMinnaProgress->lesson_id)
+                ->first();
+            $latestMinnaAccessAt = $latestMinnaProgress->last_accessed_at;
+        }
+
+        $dailyGoalTarget = 1;
+        $todayCompletedMinnaLessons = UserProgress::query()
+            ->where('user_id', $user->id)
+            ->where('lesson_type', UserProgress::TYPE_MINNA)
+            ->where('status', UserProgress::STATUS_COMPLETED)
+            ->whereDate('completed_at', Carbon::today())
+            ->count();
+        $dailyGoalPercent = min(100, (int) round(($todayCompletedMinnaLessons / $dailyGoalTarget) * 100));
+        $isDailyGoalCompleted = $todayCompletedMinnaLessons >= $dailyGoalTarget;
 
         $minnaProgressPercent = $totalMinnaLessons > 0
             ? round(($completedMinnaLessons / $totalMinnaLessons) * 100)
@@ -65,7 +94,14 @@ class UserController extends Controller
             'minnaProgressPercent',
             'totalMinnaLessons',
             'totalKanjis',
-            'currentStreak'
+            'currentStreak',
+            'firstMinnaLesson',
+            'resumeMinnaLesson',
+            'latestMinnaAccessAt',
+            'dailyGoalTarget',
+            'todayCompletedMinnaLessons',
+            'dailyGoalPercent',
+            'isDailyGoalCompleted'
         ));
     }
 
