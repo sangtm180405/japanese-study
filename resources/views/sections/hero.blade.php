@@ -18,7 +18,7 @@
                 
                 <div class="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
                     <a href="{{ route('minna.index') }}"
-                       class="bg-red-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-base md:text-lg hover:bg-red-700 transition transform hover:scale-105 shadow-xl w-full sm:w-auto text-center">
+                       class="hero-cta-main bg-red-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-base md:text-lg hover:bg-red-700 transition transform hover:scale-105 shadow-xl w-full sm:w-auto text-center">
                         Bắt đầu với Minna
                     </a>
                     <a href="{{ route('alphabet.index') }}"
@@ -48,9 +48,9 @@
                 </div>
             </div>
             
-            <div class="relative mt-8 md:mt-0">
+            <div class="relative mt-8 md:mt-0 hero-card-float">
                 <div class="absolute inset-0 bg-gradient-to-br from-red-100 to-yellow-100 rounded-3xl transform rotate-3"></div>
-                <div class="relative bg-white p-4 md:p-8 rounded-3xl shadow-2xl">
+                <div class="relative bg-white p-4 md:p-8 rounded-3xl shadow-2xl card-hover">
                     <div class="space-y-4 md:space-y-6">
                         <div class="bg-red-50 p-4 md:p-6 rounded-2xl border border-red-100">
                             <div class="flex items-center justify-between mb-3">

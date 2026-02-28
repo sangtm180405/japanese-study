@@ -20,5 +20,12 @@
                 <p class="text-xs text-gray-500">Administrator</p>
             </div>
         </div>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit"
+                    class="px-3 py-2 text-sm font-semibold rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
+                Đăng xuất
+            </button>
+        </form>
     </div>
 </header>

@@ -24,8 +24,9 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            // Nếu là admin thì vào admin dashboard, ngược lại về home
+            // Nếu là admin thì vào admin dashboard (có flash để hiển thị intro)
             if (Auth::user()->role === 'admin') {
+                $request->session()->flash('show_admin_intro', true);
                 return redirect()->route('admin.dashboard');
             }
 

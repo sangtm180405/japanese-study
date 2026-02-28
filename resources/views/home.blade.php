@@ -59,6 +59,25 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
         
+        /* Hero highlight animations */
+        @keyframes hero-card-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .hero-card-float {
+            animation: hero-card-float 6s ease-in-out infinite;
+        }
+
+        @keyframes hero-pulse-glow {
+            0%, 100% { box-shadow: 0 10px 30px rgba(220, 38, 38, 0.25); }
+            50% { box-shadow: 0 20px 45px rgba(220, 38, 38, 0.45); }
+        }
+
+        .hero-cta-main {
+            animation: hero-pulse-glow 2.4s ease-in-out infinite;
+        }
+        
         /* Japanese pattern background */
         .pattern-bg {
             background-image: radial-gradient(circle, #fee2e2 1px, transparent 1px);
