@@ -71,6 +71,9 @@ Route::prefix('minna')->name('minna.')->group(function () {
 // Admin Routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/{notification}/read', [App\Http\Controllers\Admin\NotificationController::class, 'markRead'])->name('notifications.mark-read');
+    Route::post('notifications/read-all', [App\Http\Controllers\Admin\NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
     Route::resource('alphabets', App\Http\Controllers\AlphabetController::class);
     Route::resource('kanjis', App\Http\Controllers\Admin\KanjiController::class);
     Route::resource('minna', App\Http\Controllers\Admin\MinnaController::class);

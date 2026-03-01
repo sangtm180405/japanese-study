@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,6 +58,8 @@ class AuthController extends Controller
             'password' => Hash::make($data['password']),
             'role' => 'user',
         ]);
+
+        Notification::createForAdmins('new_user', 'User mới đăng ký', $user->name . ' (' . $user->email . ') vừa đăng ký tài khoản.', ['user_id' => $user->id]);
 
         Auth::login($user);
 

@@ -6,10 +6,13 @@
     </div>
     <div class="flex items-center space-x-4">
         <div class="relative">
-            <button class="relative px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+            <a href="{{ route('admin.notifications.index') }}" class="relative inline-flex px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200" title="Thông báo">
                 <span>🔔</span>
-                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
-            </button>
+                @php $unreadCount = \App\Models\Notification::unreadCountFor(auth()->user()); @endphp
+                @if($unreadCount > 0)
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[1.25rem] h-5 flex items-center justify-center px-1">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
+                @endif
+            </a>
         </div>
         <div class="flex items-center space-x-2">
             <div class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">

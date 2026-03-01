@@ -11,6 +11,12 @@
             <span class="mr-3">📊</span>
             Dashboard
         </a>
+
+        <a href="{{ route('admin.notifications.index') }}" 
+           class="flex items-center px-6 py-3 {{ request()->routeIs('admin.notifications.*') ? 'bg-red-600 border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+            <span class="mr-3">🔔</span>
+            Thông báo
+        </a>
         
         <a href="{{ route('admin.alphabets.index') }}" 
            class="flex items-center px-6 py-3 {{ request()->routeIs('admin.alphabets.*') ? 'bg-red-600 border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
