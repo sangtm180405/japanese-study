@@ -25,16 +25,17 @@
         </a>
         
         <a href="{{ route('admin.minna.index') }}" 
-           class="flex items-center px-6 py-3 {{ request()->routeIs('admin.minna.*') ? 'bg-red-600 border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+           class="flex items-center px-6 py-3 {{ request()->routeIs('admin.minna.*') || request()->routeIs('admin.minna-section.*') ? 'bg-red-600 border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
             <span class="mr-3">📚</span>
             Quản lý Minna no Nihongo
         </a>
         
-        <a href="{{ route('admin.course-data.index') }}" 
+        {{-- Tạm ẩn - chưa có form đầy đủ cho mọi loại section --}}
+        {{-- <a href="{{ route('admin.course-data.index') }}" 
            class="flex items-center px-6 py-3 {{ request()->routeIs('admin.course-data.*') ? 'bg-red-600 border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
             <span class="mr-3">🎯</span>
             Quản lý Khóa học JLPT
-        </a>
+        </a> --}}
         
         <a href="{{ route('admin.users.index') }}" 
            class="flex items-center px-6 py-3 {{ request()->routeIs('admin.users.*') ? 'bg-red-600 border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">

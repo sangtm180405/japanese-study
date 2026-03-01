@@ -109,6 +109,9 @@
                         <a href="{{ route('alphabet.index') }}" class="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-2.5 rounded transition">
                             Học bảng chữ cái
                         </a>
+                        <a href="{{ route('vocabulary.index') }}" class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white text-center py-2.5 rounded transition">
+                            Xem từ vựng theo bài
+                        </a>
                         <a href="{{ route('flashcard.index') }}" class="block w-full bg-amber-600 hover:bg-amber-700 text-white text-center py-2.5 rounded transition">
                             Ôn Flashcard
                         </a>

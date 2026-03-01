@@ -48,10 +48,12 @@ class MinnaController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        MinnaLesson::create($request->only(['number', 'title', 'description']));
+        $lesson = MinnaLesson::create($request->only(['number', 'title', 'description']));
+
+        $this->createDefaultSections($lesson);
 
         return redirect()->route('admin.minna.index')
-                        ->with('success', 'Bài học đã được thêm thành công!');
+                        ->with('success', 'Bài học đã được thêm thành công! Đã tạo 5 phần (Từ vựng, Ngữ pháp, Luyện đọc, Hội thoại, Hán tự).');
     }
 
     /**
@@ -89,6 +91,22 @@ class MinnaController extends Controller
     }
 
     /**
+     * Tạo 5 phần mặc định cho bài học (khi bài chưa có phần)
+     */
+    public function addSections(MinnaLesson $minna)
+    {
+        if ($minna->sections()->count() > 0) {
+            return redirect()->route('admin.minna.show', $minna)
+                ->with('info', 'Bài học đã có phần. Không cần tạo thêm.');
+        }
+
+        $this->createDefaultSections($minna);
+
+        return redirect()->route('admin.minna.show', $minna)
+            ->with('success', 'Đã tạo 5 phần: Từ vựng, Ngữ pháp, Luyện đọc, Hội thoại, Hán tự.');
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(MinnaLesson $minna)
@@ -97,5 +115,30 @@ class MinnaController extends Controller
 
         return redirect()->route('admin.minna.index')
                         ->with('success', 'Bài học đã được xóa thành công!');
+    }
+
+    /**
+     * Tạo 5 phần mặc định cho bài học (Từ vựng, Ngữ pháp, Luyện đọc, Hội thoại, Hán tự)
+     */
+    private function createDefaultSections(MinnaLesson $lesson): void
+    {
+        $sectionCatalog = [
+            ['key' => 'tu-vung', 'title' => 'Phần 1: Từ vựng'],
+            ['key' => 'ngu-phap', 'title' => 'Phần 2: Ngữ pháp'],
+            ['key' => 'luyen-doc', 'title' => 'Phần 3: Luyện đọc'],
+            ['key' => 'hoi-thoai', 'title' => 'Phần 4: Hội thoại'],
+            ['key' => 'han-tu', 'title' => 'Phần 5: Hán tự'],
+        ];
+
+        foreach ($sectionCatalog as $index => $sectionDef) {
+            MinnaSection::create([
+                'lesson_id' => $lesson->id,
+                'order_index' => $index + 1,
+                'key' => $sectionDef['key'],
+                'title' => $sectionDef['title'],
+                'content' => null,
+                'media_url' => null,
+            ]);
+        }
     }
 }

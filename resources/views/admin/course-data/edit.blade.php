@@ -89,14 +89,36 @@
             </div>
         </div>
         
-        <!-- Content (JSON) -->
+        <!-- Content: Form editor theo loại -->
         <div class="mt-6">
-            <label for="content" class="block text-sm font-medium text-gray-700 mb-2">Nội dung (JSON) *</label>
-            <textarea id="content" name="content" rows="10"
-                      class="w-full border border-gray-300 rounded-lg px-3 py-2 font-mono text-sm
-                             @error('content') border-red-500 @enderror"
-                      placeholder='{"key": "value"}' required>{{ old('content', json_encode($courseData->content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) }}</textarea>
-            <p class="text-xs text-gray-500 mt-1">Nhập dữ liệu dạng JSON hợp lệ</p>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nội dung</label>
+            <p class="text-xs text-gray-500 mb-2">Chọn "Loại section" và "Section Key" ở trên → form nhập sẽ hiện tương ứng.</p>
+            @php
+                $st = $courseData->section_type ?? '';
+                $sk = $courseData->section_key ?? '';
+                $content = old('content', $courseData->content ?? []);
+            @endphp
+            <div id="editor-words" class="content-editor {{ $sk === 'tuVung' && $st !== 'marugoto_n5' ? '' : 'hidden' }}">
+                @include('admin.course-data.editors.words', ['content' => $content])
+            </div>
+            <div id="editor-luyen-doc" class="content-editor {{ $st === 'luyen_doc' ? '' : 'hidden' }}">
+                @include('admin.course-data.editors.luyen-doc', ['content' => $content])
+            </div>
+            <div id="editor-ngu-phap" class="content-editor {{ $sk === 'nguPhap' && $st !== 'marugoto_n5' ? '' : 'hidden' }}">
+                @include('admin.course-data.editors.ngu-phap', ['content' => is_array($content) ? $content : []])
+            </div>
+            <div id="editor-doc-hieu" class="content-editor {{ in_array($sk, ['docHieu','ngheHieu']) ? '' : 'hidden' }}">
+                @include('admin.course-data.editors.doc-hieu', ['content' => is_array($content) ? $content : []])
+            </div>
+            <div id="editor-marugoto" class="content-editor {{ $st === 'marugoto_n5' ? '' : 'hidden' }}">
+                @include('admin.course-data.editors.marugoto', ['content' => is_array($content) ? $content : []])
+            </div>
+            @php
+                $hasEditor = ($sk === 'tuVung' && $st !== 'marugoto_n5') || $st === 'luyen_doc' || ($sk === 'nguPhap' && $st !== 'marugoto_n5') || in_array($sk, ['docHieu','ngheHieu']) || $st === 'marugoto_n5';
+            @endphp
+            <div id="editor-no" class="content-editor {{ $hasEditor ? 'hidden' : '' }}">
+                @include('admin.course-data.editors.no-editor')
+            </div>
             @error('content')
                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
             @enderror
@@ -115,5 +137,40 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sectionType = document.getElementById('section_type');
+    const sectionKey = document.getElementById('section_key');
+    const editors = {
+        words: document.getElementById('editor-words'),
+        luyenDoc: document.getElementById('editor-luyen-doc'),
+        nguPhap: document.getElementById('editor-ngu-phap'),
+        docHieu: document.getElementById('editor-doc-hieu'),
+        marugoto: document.getElementById('editor-marugoto'),
+        no: document.getElementById('editor-no')
+    };
+    function setEditorDisabled(editor, disabled) {
+        editor?.querySelectorAll('input, textarea, select').forEach(inp => inp.disabled = disabled);
+    }
+    function updateEditor() {
+        const st = sectionType?.value || '';
+        const sk = sectionKey?.value || '';
+        Object.entries(editors).forEach(([k, el]) => {
+            if (el) { el.classList.add('hidden'); setEditorDisabled(el, true); }
+        });
+        let active = null;
+        if (sk === 'tuVung' && st !== 'marugoto_n5') active = editors.words;
+        else if (st === 'luyen_doc') active = editors.luyenDoc;
+        else if (sk === 'nguPhap' && st !== 'marugoto_n5') active = editors.nguPhap;
+        else if (['docHieu','ngheHieu'].includes(sk)) active = editors.docHieu;
+        else if (st === 'marugoto_n5') active = editors.marugoto;
+        else active = editors.no;
+        if (active) { active.classList.remove('hidden'); setEditorDisabled(active, false); }
+    }
+    sectionType?.addEventListener('change', updateEditor);
+    sectionKey?.addEventListener('change', updateEditor);
+});
+</script>
 @endsection
 

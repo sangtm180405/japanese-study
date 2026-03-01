@@ -55,6 +55,17 @@
                         <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-600 to-red-700 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
                     @endif
                 </a>
+                <a href="{{ route('vocabulary.index') }}"
+                   class="relative px-4 py-2 text-sm font-medium transition-all duration-300 group">
+                    <span class="relative z-10 {{ request()->routeIs('vocabulary.*') ? 'text-red-600' : 'text-gray-700 group-hover:text-gray-900' }}">
+                        Từ vựng
+                    </span>
+                    @if(request()->routeIs('vocabulary.*'))
+                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-600 to-red-700 rounded-full"></span>
+                    @else
+                        <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-600 to-red-700 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
+                    @endif
+                </a>
                 <a href="{{ route('flashcard.index') }}"
                    class="relative px-4 py-2 text-sm font-medium transition-all duration-300 group">
                     <span class="relative z-10 {{ request()->routeIs('flashcard.*') ? 'text-red-600' : 'text-gray-700 group-hover:text-gray-900' }}">
@@ -93,23 +104,17 @@
             <!-- Right Section -->
             <div class="flex items-center space-x-3">
                 @auth
-                    <!-- User Menu Desktop -->
+                    <!-- User Menu Desktop - Icon tài khoản -->
                     <div class="hidden lg:flex items-center space-x-4">
-                        <a href="{{ route('user.dashboard') }}" class="flex items-center space-x-3 px-4 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors duration-300">
-                            <div class="w-9 h-9 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                            </div>
-                            <div class="hidden xl:block">
-                                <p class="text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</p>
-                                @if(auth()->user()->role === 'admin')
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-r from-red-100 to-red-50 text-red-700 border border-red-200">
-                                        Admin
-                                    </span>
-                                @else
-                                    <p class="text-xs text-gray-500">Người Dùng</p>
-                                @endif
-                            </div>
+                        <a href="{{ route('user.dashboard') }}" title="Tài khoản - {{ auth()->user()->name }}" class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 ring-2 ring-white">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                         </a>
+                        @if(auth()->user()->role === 'admin')
+                            <a href="{{ route('admin.dashboard') }}" 
+                               class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-all duration-300 shadow-md">
+                                Admin
+                            </a>
+                        @endif
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
                             <button type="submit" 
@@ -177,6 +182,13 @@
                 </svg>
                 Bài học Minna
             </a>
+            <a href="{{ route('vocabulary.index') }}"
+               class="flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 {{ request()->routeIs('vocabulary.*') ? 'bg-red-50 text-red-600' : 'text-gray-700 hover:bg-gray-50 hover:text-red-600' }}">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                Từ vựng
+            </a>
             <a href="{{ route('flashcard.index') }}"
                class="flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 {{ request()->routeIs('flashcard.*') ? 'bg-red-50 text-red-600' : 'text-gray-700 hover:bg-gray-50 hover:text-red-600' }}">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -218,6 +230,12 @@
                             </div>
                         </div>
                     </a>
+                    @if(auth()->user()->role === 'admin')
+                        <a href="{{ route('admin.dashboard') }}" 
+                           class="block px-4 py-3 mb-3 bg-red-600 hover:bg-red-700 text-white text-center text-sm font-semibold rounded-lg transition-all duration-300">
+                            Admin
+                        </a>
+                    @endif
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit"

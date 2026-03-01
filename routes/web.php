@@ -43,6 +43,8 @@ Route::prefix('kanji')->name('kanji.')->group(function () {
     Route::get('/{level}/flashcard', [App\Http\Controllers\UserKanjiController::class, 'flashcard'])->name('flashcard')->where('level', 'N[1-5]');
 });
 
+Route::get('/tu-vung', [App\Http\Controllers\VocabularyController::class, 'index'])->name('vocabulary.index');
+Route::get('/tu-vung/bai-{number}', [App\Http\Controllers\VocabularyController::class, 'show'])->name('vocabulary.show')->where('number', '[0-9]+');
 Route::get('/flashcard', [App\Http\Controllers\FlashcardController::class, 'index'])->name('flashcard.index');
 Route::get('/flashcard/bai-{number}', [App\Http\Controllers\FlashcardController::class, 'study'])->name('flashcard.study');
 Route::get('/flashcard/study', [App\Http\Controllers\FlashcardController::class, 'study'])->name('flashcard.study.multi');
@@ -72,6 +74,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::resource('alphabets', App\Http\Controllers\AlphabetController::class);
     Route::resource('kanjis', App\Http\Controllers\Admin\KanjiController::class);
     Route::resource('minna', App\Http\Controllers\Admin\MinnaController::class);
+    Route::post('minna/{minna}/add-sections', [App\Http\Controllers\Admin\MinnaController::class, 'addSections'])->name('minna.add-sections');
+    Route::get('minna-sections/{minnaSection}/edit', [App\Http\Controllers\Admin\MinnaSectionController::class, 'edit'])->name('minna-section.edit');
+    Route::put('minna-sections/{minnaSection}', [App\Http\Controllers\Admin\MinnaSectionController::class, 'update'])->name('minna-section.update');
     Route::resource('course-data', App\Http\Controllers\Admin\CourseDataController::class);
     Route::resource('users', App\Http\Controllers\Admin\UserController::class)->except(['create', 'store']);
 });

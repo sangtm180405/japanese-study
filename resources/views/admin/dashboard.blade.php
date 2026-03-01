@@ -119,10 +119,11 @@
            class="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 text-center">
             + Thêm Bài Minna
         </a>
-        <a href="{{ route('admin.course-data.create') }}" 
+        {{-- Tạm ẩn khóa học JLPT --}}
+        {{-- <a href="{{ route('admin.course-data.create') }}" 
            class="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 text-center">
             + Thêm Course Data
-        </a>
+        </a> --}}
     </div>
 </div>
 @endsection

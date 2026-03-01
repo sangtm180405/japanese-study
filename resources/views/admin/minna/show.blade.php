@@ -1,6 +1,13 @@
 @extends('adminlayout.app')
 
 @section('content')
+@if(session('success'))
+    <div class="mb-4 p-4 bg-green-100 border border-green-300 text-green-700 rounded-lg">{{ session('success') }}</div>
+@endif
+@if(session('info'))
+    <div class="mb-4 p-4 bg-blue-100 border border-blue-300 text-blue-700 rounded-lg">{{ session('info') }}</div>
+@endif
+
 <div class="mb-6">
     <div class="flex items-center justify-between">
         <h1 class="text-3xl font-bold text-gray-900">Chi tiết bài học: {{ $minna->title }}</h1>
@@ -41,17 +48,29 @@
     <div class="space-y-4">
         @foreach($minna->sections as $section)
         <div class="border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between flex-wrap gap-3">
                 <div>
                     <h3 class="font-semibold text-gray-900">{{ $section->title }}</h3>
                     <p class="text-sm text-gray-600 mt-1">Key: {{ $section->key }} | Thứ tự: {{ $section->order_index }}</p>
                 </div>
+                <a href="{{ route('admin.minna-section.edit', $section) }}"
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
+                    Sửa nội dung
+                </a>
             </div>
         </div>
         @endforeach
     </div>
     @else
-    <p class="text-gray-500 text-center py-8">Chưa có phần nào trong bài học này</p>
+    <div class="text-center py-8">
+        <p class="text-gray-500 mb-4">Chưa có phần nào trong bài học này.</p>
+        <form action="{{ route('admin.minna.add-sections', $minna) }}" method="POST" class="inline">
+            @csrf
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                + Tạo 5 phần mặc định
+            </button>
+        </form>
+    </div>
     @endif
 </div>
 @endsection
