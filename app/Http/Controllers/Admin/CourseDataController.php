@@ -3,11 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCourseDataRequest;
+use App\Http\Requests\UpdateCourseDataRequest;
 use App\Models\N5CourseData;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CourseDataController extends Controller
 {
+    use PerPageTrait;
+
     /**
      * Display a listing of the resource.
      */
@@ -33,7 +38,7 @@ class CourseDataController extends Controller
             });
         }
 
-        $courseData = $query->orderBy('section_type')->orderBy('order')->paginate(20);
+        $courseData = $query->orderBy('section_type')->orderBy('order')->paginate($this->adminPerPage($request))->withQueryString();
 
         return view('admin.course-data.index', compact('courseData'));
     }
@@ -49,18 +54,11 @@ class CourseDataController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreCourseDataRequest $request)
     {
-        $request->validate([
-            'section_type' => 'required|string|max:255',
-            'section_key' => 'nullable|string|max:255',
-            'bai' => 'nullable|string|max:255',
-            'title' => 'nullable|string|max:255',
-            'content' => 'nullable',
-            'order' => 'required|integer',
-        ]);
-
-        $data = $request->only(['section_type', 'section_key', 'bai', 'title', 'order']);
+        $data = $request->validated();
+        unset($data['content']);
+        $data = array_intersect_key($data, array_flip(['section_type', 'section_key', 'bai', 'title', 'order']));
         try {
             $data['content'] = $this->normalizeContent($request);
         } catch (\InvalidArgumentException $e) {
@@ -68,6 +66,7 @@ class CourseDataController extends Controller
         }
 
         N5CourseData::create($data);
+        Cache::forget('admin:dashboard:stats');
 
         return redirect()->route('admin.course-data.index')
                         ->with('success', 'Course data đã được thêm thành công!');
@@ -84,18 +83,11 @@ class CourseDataController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, N5CourseData $courseData)
+    public function update(UpdateCourseDataRequest $request, N5CourseData $courseData)
     {
-        $request->validate([
-            'section_type' => 'required|string|max:255',
-            'section_key' => 'nullable|string|max:255',
-            'bai' => 'nullable|string|max:255',
-            'title' => 'nullable|string|max:255',
-            'content' => 'nullable',
-            'order' => 'required|integer',
-        ]);
-
-        $data = $request->only(['section_type', 'section_key', 'bai', 'title', 'order']);
+        $data = $request->validated();
+        unset($data['content']);
+        $data = array_intersect_key($data, array_flip(['section_type', 'section_key', 'bai', 'title', 'order']));
         try {
             $data['content'] = $this->normalizeContent($request, $courseData);
         } catch (\InvalidArgumentException $e) {
@@ -103,6 +95,7 @@ class CourseDataController extends Controller
         }
 
         $courseData->update($data);
+        Cache::forget('admin:dashboard:stats');
 
         return redirect()->route('admin.course-data.index')
                         ->with('success', 'Course data đã được cập nhật thành công!');
@@ -114,6 +107,7 @@ class CourseDataController extends Controller
     public function destroy(N5CourseData $courseData)
     {
         $courseData->delete();
+        Cache::forget('admin:dashboard:stats');
 
         return redirect()->route('admin.course-data.index')
                         ->with('success', 'Course data đã được xóa thành công!');

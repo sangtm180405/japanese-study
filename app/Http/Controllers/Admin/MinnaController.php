@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreMinnaRequest;
+use App\Http\Requests\UpdateMinnaRequest;
 use App\Models\MinnaLesson;
 use App\Models\MinnaSection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class MinnaController extends Controller
 {
+    use PerPageTrait;
+
     /**
      * Display a listing of the resource.
      */
@@ -24,7 +29,7 @@ class MinnaController extends Controller
             });
         }
 
-        $lessons = $query->withCount('sections')->orderBy('number')->paginate(20);
+        $lessons = $query->withCount('sections')->orderBy('number')->paginate($this->adminPerPage($request))->withQueryString();
 
         return view('admin.minna.index', compact('lessons'));
     }
@@ -40,17 +45,12 @@ class MinnaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreMinnaRequest $request)
     {
-        $request->validate([
-            'number' => 'required|integer|unique:minna_lessons,number',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $lesson = MinnaLesson::create($request->only(['number', 'title', 'description']));
+        $lesson = MinnaLesson::create($request->validated());
 
         $this->createDefaultSections($lesson);
+        $this->clearDashboardCache();
 
         return redirect()->route('admin.minna.index')
                         ->with('success', 'Bài học đã được thêm thành công! Đã tạo 5 phần (Từ vựng, Ngữ pháp, Luyện đọc, Hội thoại, Hán tự).');
@@ -76,15 +76,10 @@ class MinnaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, MinnaLesson $minna)
+    public function update(UpdateMinnaRequest $request, MinnaLesson $minna)
     {
-        $request->validate([
-            'number' => 'required|integer|unique:minna_lessons,number,' . $minna->id,
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $minna->update($request->only(['number', 'title', 'description']));
+        $minna->update($request->validated());
+        $this->clearDashboardCache();
 
         return redirect()->route('admin.minna.index')
                         ->with('success', 'Bài học đã được cập nhật thành công!');
@@ -112,9 +107,17 @@ class MinnaController extends Controller
     public function destroy(MinnaLesson $minna)
     {
         $minna->delete();
+        $this->clearDashboardCache();
 
         return redirect()->route('admin.minna.index')
                         ->with('success', 'Bài học đã được xóa thành công!');
+    }
+
+    private function clearDashboardCache(): void
+    {
+        Cache::forget('dashboard:total_minna_lessons');
+        Cache::forget('dashboard:first_minna_lesson');
+        Cache::forget('admin:dashboard:stats');
     }
 
     /**

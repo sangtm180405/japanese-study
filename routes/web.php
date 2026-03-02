@@ -8,13 +8,15 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
-// Auth Routes
+// Auth Routes (throttle: 5 req/phút cho POST — tránh brute force)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [App\Http\Controllers\AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login.post');
+    Route::post('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login.post')
+        ->middleware('throttle:auth');
 
     Route::get('/register', [App\Http\Controllers\AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [App\Http\Controllers\AuthController::class, 'register'])->name('register.post');
+    Route::post('/register', [App\Http\Controllers\AuthController::class, 'register'])->name('register.post')
+        ->middleware('throttle:auth');
 });
 
 Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])
@@ -74,7 +76,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/{notification}/read', [App\Http\Controllers\Admin\NotificationController::class, 'markRead'])->name('notifications.mark-read');
     Route::post('notifications/read-all', [App\Http\Controllers\Admin\NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
-    Route::resource('alphabets', App\Http\Controllers\AlphabetController::class);
+    Route::resource('alphabets', App\Http\Controllers\Admin\AlphabetController::class);
     Route::resource('kanjis', App\Http\Controllers\Admin\KanjiController::class);
     Route::resource('minna', App\Http\Controllers\Admin\MinnaController::class);
     Route::post('minna/{minna}/add-sections', [App\Http\Controllers\Admin\MinnaController::class, 'addSections'])->name('minna.add-sections');

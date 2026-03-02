@@ -28,6 +28,11 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Giới hạn đăng nhập/đăng ký: 5 lần/phút theo IP — tránh brute force
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
         // Register route model binding for course-data
         Route::bind('course_datum', function ($value) {
             return \App\Models\N5CourseData::findOrFail($value);

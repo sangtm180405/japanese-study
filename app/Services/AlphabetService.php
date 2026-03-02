@@ -4,19 +4,27 @@ namespace App\Services;
 
 use App\Models\Alphabet;
 use App\Models\Kanji;
+use Illuminate\Support\Facades\Cache;
 
 class AlphabetService
 {
+    private const CACHE_TTL = 600; // 10 phút
+
     /**
-     * Lấy tất cả alphabets theo type
+     * Lấy tất cả alphabets theo type (có cache cho trang user /alphabet)
      */
     public function getAlphabetsByTypes(array $types)
     {
-        return Alphabet::whereIn('type', $types)
-            ->select('id', 'character', 'romaji', 'type', 'category')
-            ->orderBy('type')
-            ->orderBy('character')
-            ->get();
+        $t = $types;
+        sort($t);
+        $key = 'alphabet:by_types:' . implode(',', $t);
+        return Cache::remember($key, self::CACHE_TTL, function () use ($types) {
+            return Alphabet::whereIn('type', $types)
+                ->select('id', 'character', 'romaji', 'type', 'category')
+                ->orderBy('type')
+                ->orderBy('character')
+                ->get();
+        });
     }
 
     /**
@@ -32,15 +40,26 @@ class AlphabetService
     }
 
     /**
-     * Lấy tất cả kanjis theo levels
+     * Lấy tất cả kanjis theo levels (có cache cho trang user /alphabet)
      */
     public function getKanjisByLevels(array $levels)
     {
-        return Kanji::whereIn('level', $levels)
-            ->select('id', 'character', 'meaning', 'on_reading', 'kun_reading', 'level', 'stroke_count', 'radical', 'examples')
-            ->orderBy('level')
-            ->orderBy('character')
-            ->get();
+        $l = $levels;
+        sort($l);
+        $key = 'alphabet:kanjis_by_levels:' . implode(',', $l);
+        return Cache::remember($key, self::CACHE_TTL, function () use ($levels) {
+            return Kanji::whereIn('level', $levels)
+                ->select('id', 'character', 'meaning', 'on_reading', 'kun_reading', 'level', 'stroke_count', 'radical', 'examples')
+                ->orderBy('level')
+                ->orderBy('character')
+                ->get();
+        });
+    }
+
+    public static function clearAlphabetCache(): void
+    {
+        Cache::forget('alphabet:by_types:hiragana,katakana,romaji');
+        Cache::forget('alphabet:kanjis_by_levels:N3,N4,N5');
     }
 
     /**

@@ -42,5 +42,10 @@ class UserProgress extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function lesson(): BelongsTo
+    {
+        return $this->belongsTo(MinnaLesson::class, 'lesson_id');
+    }
 }
 

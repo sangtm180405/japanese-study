@@ -54,7 +54,7 @@
                     <div class="divide-y divide-gray-100">
                         @foreach($minnaProgresses as $progress)
                             @php
-                                $lesson = $lessons->get($progress->lesson_id);
+                                $lesson = $progress->lesson;
                             @endphp
                             <a
                                 href="{{ route('minna.show', ['number' => $lesson?->number]) }}"

@@ -19,13 +19,13 @@ class StatisticsService
      */
     public function getLessonsCompletedByDay(User $user, int $days = 7): array
     {
-        $start = Carbon::today()->subDays($days - 1);
+        $startOfRange = Carbon::today()->subDays($days - 1)->copy()->startOfDay();
         $rows = UserProgress::query()
             ->where('user_id', $user->id)
             ->where('lesson_type', UserProgress::TYPE_MINNA)
             ->where('status', UserProgress::STATUS_COMPLETED)
             ->whereNotNull('completed_at')
-            ->where('completed_at', '>=', $start->startOfDay())
+            ->where('completed_at', '>=', $startOfRange)
             ->select(DB::raw('DATE(completed_at) as date'), DB::raw('COUNT(*) as count'))
             ->groupBy('date')
             ->orderBy('date')
@@ -45,44 +45,44 @@ class StatisticsService
     }
 
     /**
-     * Số bài Minna hoàn thành theo từng tuần (N tuần gần nhất)
-     * Tuần tính từ T2 đến Chủ nhật.
+     * Số bài Minna hoàn thành theo từng tuần (N tuần gần nhất).
+     * Tuần ISO (T2–Chủ nhật), dùng Carbon để tương thích mọi DB.
      * @return array{labels: string[], data: int[]}
      */
     public function getLessonsCompletedByWeek(User $user, int $weeks = 8): array
     {
         $start = Carbon::today()->subWeeks($weeks)->startOfWeek(Carbon::MONDAY);
-        $rows = UserProgress::query()
+        $progresses = UserProgress::query()
             ->where('user_id', $user->id)
             ->where('lesson_type', UserProgress::TYPE_MINNA)
             ->where('status', UserProgress::STATUS_COMPLETED)
             ->whereNotNull('completed_at')
             ->where('completed_at', '>=', $start)
-            ->select(
-                DB::raw('YEARWEEK(completed_at, 3) as yw'),
-                DB::raw('MIN(DATE(completed_at)) as week_start'),
-                DB::raw('COUNT(*) as count')
-            )
-            ->groupBy('yw')
-            ->orderBy('yw')
-            ->get();
+            ->pluck('completed_at');
 
         $byWeek = [];
-        foreach ($rows as $r) {
-            $byWeek[$r->yw] = [
-                'label' => Carbon::parse($r->week_start)->format('d/m') . '-' . Carbon::parse($r->week_start)->addDays(6)->format('d/m'),
-                'count' => (int) $r->count,
-            ];
+        foreach ($progresses as $completedAt) {
+            $dt = $completedAt instanceof Carbon ? $completedAt : Carbon::parse($completedAt);
+            $weekStart = $dt->copy()->startOfWeek(Carbon::MONDAY);
+            $key = $weekStart->isoWeekYear() * 100 + $weekStart->isoWeek();
+            if (!isset($byWeek[$key])) {
+                $weekEnd = $weekStart->copy()->addDays(6);
+                $byWeek[$key] = [
+                    'label' => $weekStart->format('d/m') . '-' . $weekEnd->format('d/m'),
+                    'count' => 0,
+                ];
+            }
+            $byWeek[$key]['count']++;
         }
 
         $labels = [];
         $data = [];
         for ($i = $weeks - 1; $i >= 0; $i--) {
             $weekStart = Carbon::today()->subWeeks($i)->startOfWeek(Carbon::MONDAY);
-            $yw = (int) $weekStart->isoWeekYear() * 100 + (int) $weekStart->isoWeek();
+            $key = $weekStart->isoWeekYear() * 100 + $weekStart->isoWeek();
             $weekEnd = $weekStart->copy()->addDays(6);
-            $labels[] = $byWeek[$yw]['label'] ?? ($weekStart->format('d/m') . '-' . $weekEnd->format('d/m'));
-            $data[] = $byWeek[$yw]['count'] ?? 0;
+            $labels[] = $byWeek[$key]['label'] ?? ($weekStart->format('d/m') . '-' . $weekEnd->format('d/m'));
+            $data[] = $byWeek[$key]['count'] ?? 0;
         }
 
         return ['labels' => $labels, 'data' => $data];

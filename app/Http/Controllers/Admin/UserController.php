@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
+    use PerPageTrait;
+
     /**
      * Display a listing of the resource.
      */
@@ -28,7 +31,7 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->orderBy('created_at', 'desc')->paginate(20);
+        $users = $query->orderBy('created_at', 'desc')->paginate($this->adminPerPage($request))->withQueryString();
 
         return view('admin.users.index', compact('users'));
     }
@@ -53,6 +56,7 @@ class UserController extends Controller
         ]);
 
         $user->update($request->only(['name', 'email', 'role']));
+        Cache::forget('admin:dashboard:stats');
 
         return redirect()->route('admin.users.index')
                         ->with('success', 'User đã được cập nhật thành công!');
@@ -70,6 +74,7 @@ class UserController extends Controller
         }
 
         $user->delete();
+        Cache::forget('admin:dashboard:stats');
 
         return redirect()->route('admin.users.index')
                         ->with('success', 'User đã được xóa thành công!');
