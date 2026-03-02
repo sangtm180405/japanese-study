@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Alphabet;
 use App\Services\AlphabetService;
 use App\Http\Requests\StoreAlphabetRequest;
