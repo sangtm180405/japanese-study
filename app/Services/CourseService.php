@@ -3,12 +3,14 @@
 namespace App\Services;
 
 use App\Models\N5CourseData;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 
 class CourseService
 {
     private const VALID_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
     private const VALID_SECTION_TYPES = ['speed_master_n5', 'luyen_doc', 'marugoto_n5'];
+    private const CACHE_TTL = 600;
 
     /**
      * Validate và normalize level
@@ -101,206 +103,214 @@ class CourseService
     }
 
     /**
-     * Lấy danh sách sections cho N5 từ database
+     * Lấy danh sách sections cho N5 từ database (có cache)
      */
     public function getN5Sections(): array
     {
-        $sections = [];
-        
-        // Speed Master N5
-        $speedMasterCount = N5CourseData::where('section_type', 'speed_master_n5')->count();
-        if ($speedMasterCount > 0) {
+        return Cache::remember('course:n5:sections', self::CACHE_TTL, function () {
+            $sections = [];
+
+            $speedMasterCount = N5CourseData::where('section_type', 'speed_master_n5')->count();
+            if ($speedMasterCount > 0) {
+                $sections[] = [
+                    'title' => 'Speed Master N5',
+                    'description' => 'Giáo trình Speed Master N5 - Học nhanh và hiệu quả',
+                    'icon' => '⚡',
+                    'type' => 'speed_master_n5'
+                ];
+            }
+
+            $luyenDocCount = N5CourseData::where('section_type', 'luyen_doc')->count();
+            if ($luyenDocCount > 0) {
+                $sections[] = [
+                    'title' => 'Luyện đọc',
+                    'description' => 'Rèn luyện kỹ năng đọc hiểu qua các bài đọc đa dạng',
+                    'icon' => '📖',
+                    'type' => 'luyen_doc'
+                ];
+            }
+
+            $marugotoCount = N5CourseData::where('section_type', 'marugoto_n5')->count();
+            if ($marugotoCount > 0) {
+                $sections[] = [
+                    'title' => 'Marugoto N5',
+                    'description' => 'Giáo trình Marugoto N5 - Học tiếng Nhật giao tiếp thực tế',
+                    'icon' => '🇯🇵',
+                    'type' => 'marugoto_n5'
+                ];
+            }
+
             $sections[] = [
-                'title' => 'Speed Master N5',
-                'description' => 'Giáo trình Speed Master N5 - Học nhanh và hiệu quả',
-                'icon' => '⚡',
-                'type' => 'speed_master_n5'
+                'title' => 'Korede Daijoubu N4 & N5',
+                'description' => 'Sách luyện thi Korede Daijoubu - Chuẩn bị cho kỳ thi JLPT',
+                'icon' => '📚',
+                'type' => null,
+                'disabled' => true
             ];
-        }
-
-        // Luyện đọc
-        $luyenDocCount = N5CourseData::where('section_type', 'luyen_doc')->count();
-        if ($luyenDocCount > 0) {
             $sections[] = [
-                'title' => 'Luyện đọc',
-                'description' => 'Rèn luyện kỹ năng đọc hiểu qua các bài đọc đa dạng',
-                'icon' => '📖',
-                'type' => 'luyen_doc'
+                'title' => 'Gokaku Dekiru N4 & N5',
+                'description' => 'Sách luyện thi Gokaku Dekiru - Luyện đề thi thử mới nhất',
+                'icon' => '✅',
+                'type' => null,
+                'disabled' => true
             ];
-        }
-
-        // Marugoto N5
-        $marugotoCount = N5CourseData::where('section_type', 'marugoto_n5')->count();
-        if ($marugotoCount > 0) {
             $sections[] = [
-                'title' => 'Marugoto N5',
-                'description' => 'Giáo trình Marugoto N5 - Học tiếng Nhật giao tiếp thực tế',
-                'icon' => '🇯🇵',
-                'type' => 'marugoto_n5'
+                'title' => 'Tanki Master N5',
+                'description' => 'Sách luyện thi Tanki Master N5 - Tổng hợp kiến thức và đề thi',
+                'icon' => '🎯',
+                'type' => null,
+                'disabled' => true
             ];
-        }
 
-        // Korede Daijoubu (chưa có dữ liệu)
-        $sections[] = [
-            'title' => 'Korede Daijoubu N4 & N5',
-            'description' => 'Sách luyện thi Korede Daijoubu - Chuẩn bị cho kỳ thi JLPT',
-            'icon' => '📚',
-            'type' => null,
-            'disabled' => true
-        ];
-
-        // Gokaku Dekiru (chưa có dữ liệu)
-        $sections[] = [
-            'title' => 'Gokaku Dekiru N4 & N5',
-            'description' => 'Sách luyện thi Gokaku Dekiru - Luyện đề thi thử mới nhất',
-            'icon' => '✅',
-            'type' => null,
-            'disabled' => true
-        ];
-
-        // Tanki Master N5 (chưa có dữ liệu)
-        $sections[] = [
-            'title' => 'Tanki Master N5',
-            'description' => 'Sách luyện thi Tanki Master N5 - Tổng hợp kiến thức và đề thi',
-            'icon' => '🎯',
-            'type' => null,
-            'disabled' => true
-        ];
-
-        return $sections;
+            return $sections;
+        });
     }
 
     /**
-     * Lấy danh sách bài luyện đọc
+     * Lấy danh sách bài luyện đọc (có cache)
      */
     public function getLuyenDocLessons()
     {
-        $lessons = N5CourseData::where('section_type', 'luyen_doc')
-            ->select('id', 'bai', 'title', 'order')
-            ->orderBy('order')
-            ->get();
+        return Cache::remember('course:luyen_doc:lessons', self::CACHE_TTL, function () {
+            $lessons = N5CourseData::where('section_type', 'luyen_doc')
+                ->select('id', 'bai', 'title', 'order')
+                ->orderBy('order')
+                ->get();
 
-        if ($lessons->isEmpty()) {
-            throw new InvalidArgumentException('Chưa có dữ liệu luyện đọc');
-        }
+            if ($lessons->isEmpty()) {
+                throw new InvalidArgumentException('Chưa có dữ liệu luyện đọc');
+            }
 
-        return $lessons;
+            return $lessons;
+        });
     }
 
     /**
-     * Lấy chi tiết bài luyện đọc
+     * Lấy chi tiết bài luyện đọc (có cache theo id)
      */
     public function getLuyenDocDetail(int $id): N5CourseData
     {
-        $item = N5CourseData::where('section_type', 'luyen_doc')
-            ->where('id', $id)
-            ->first();
+        return Cache::remember("course:luyen_doc:detail:{$id}", self::CACHE_TTL, function () use ($id) {
+            $item = N5CourseData::where('section_type', 'luyen_doc')
+                ->where('id', $id)
+                ->first();
 
-        if (!$item) {
-            throw new InvalidArgumentException('Không tìm thấy bài luyện đọc');
-        }
+            if (!$item) {
+                throw new InvalidArgumentException('Không tìm thấy bài luyện đọc');
+            }
 
-        return $item;
+            return $item;
+        });
     }
 
     /**
-     * Lấy danh sách bài Marugoto N5
+     * Lấy danh sách bài Marugoto N5 (có cache)
      */
     public function getMarugotoLessons()
     {
-        $lessons = N5CourseData::where('section_type', 'marugoto_n5')
-            ->select('id', 'bai', 'title', 'order')
-            ->orderBy('order')
-            ->get();
+        return Cache::remember('course:marugoto_n5:lessons', self::CACHE_TTL, function () {
+            $lessons = N5CourseData::where('section_type', 'marugoto_n5')
+                ->select('id', 'bai', 'title', 'order')
+                ->orderBy('order')
+                ->get();
 
-        if ($lessons->isEmpty()) {
-            throw new InvalidArgumentException('Chưa có dữ liệu Marugoto N5');
-        }
+            if ($lessons->isEmpty()) {
+                throw new InvalidArgumentException('Chưa có dữ liệu Marugoto N5');
+            }
 
-        return $lessons;
+            return $lessons;
+        });
     }
 
     /**
-     * Lấy chi tiết bài Marugoto N5
+     * Lấy chi tiết bài Marugoto N5 (có cache theo id)
      */
     public function getMarugotoDetail(int $id): N5CourseData
     {
-        $item = N5CourseData::where('section_type', 'marugoto_n5')
-            ->where('id', $id)
-            ->first();
+        return Cache::remember("course:marugoto_n5:detail:{$id}", self::CACHE_TTL, function () use ($id) {
+            $item = N5CourseData::where('section_type', 'marugoto_n5')
+                ->where('id', $id)
+                ->first();
 
-        if (!$item) {
-            throw new InvalidArgumentException('Không tìm thấy bài Marugoto N5');
-        }
+            if (!$item) {
+                throw new InvalidArgumentException('Không tìm thấy bài Marugoto N5');
+            }
 
-        return $item;
+            return $item;
+        });
     }
 
     /**
-     * Lấy danh sách bài Speed Master N5
+     * Lấy danh sách bài Speed Master N5 (có cache)
      */
     public function getSpeedMasterLessons(): array
     {
-        $allLessons = N5CourseData::where('section_type', 'speed_master_n5')
-            ->where('section_key', 'tuVung')
-            ->select('bai', 'title', 'order')
-            ->orderBy('order')
-            ->get();
+        return Cache::remember('course:speed_master_n5:lessons', self::CACHE_TTL, function () {
+            $allLessons = N5CourseData::where('section_type', 'speed_master_n5')
+                ->where('section_key', 'tuVung')
+                ->select('bai', 'title', 'order')
+                ->orderBy('order')
+                ->get();
 
-        if ($allLessons->isEmpty()) {
-            throw new InvalidArgumentException('Chưa có dữ liệu Speed Master N5');
-        }
+            if ($allLessons->isEmpty()) {
+                throw new InvalidArgumentException('Chưa có dữ liệu Speed Master N5');
+            }
 
-        return $allLessons->map(function($lesson) {
-            return [
-                'bai' => $lesson->bai,
-                'title' => $lesson->title,
-            ];
-        })->toArray();
+            return $allLessons->map(function ($lesson) {
+                return [
+                    'bai' => $lesson->bai,
+                    'title' => $lesson->title,
+                ];
+            })->toArray();
+        });
     }
 
     /**
-     * Lấy chi tiết bài Speed Master N5
+     * Lấy chi tiết bài Speed Master N5 (có cache theo bai)
      */
     public function getSpeedMasterDetail(string $bai): array
     {
-        $allData = N5CourseData::where('section_type', 'speed_master_n5')
-            ->where('bai', $bai)
-            ->orderBy('order')
-            ->get();
+        return Cache::remember("course:speed_master_n5:detail:{$bai}", self::CACHE_TTL, function () use ($bai) {
+            $allData = N5CourseData::where('section_type', 'speed_master_n5')
+                ->where('bai', $bai)
+                ->orderBy('order')
+                ->get();
 
-        if ($allData->isEmpty()) {
-            throw new InvalidArgumentException('Không tìm thấy bài học');
-        }
+            if ($allData->isEmpty()) {
+                throw new InvalidArgumentException('Không tìm thấy bài học');
+            }
 
-        $groupedData = $allData->groupBy('section_key');
-        $title = $allData->first()->title ?? '';
+            $groupedData = $allData->groupBy('section_key');
+            $title = $allData->first()->title ?? '';
 
-        return [
-            'groupedData' => $groupedData,
-            'title' => $title,
-        ];
+            return [
+                'groupedData' => $groupedData,
+                'title' => $title,
+            ];
+        });
     }
 
     /**
-     * Lấy dữ liệu section theo type
+     * Lấy dữ liệu section theo type (có cache)
      */
     public function getSectionData(string $sectionType): array
     {
-        $data = N5CourseData::where('section_type', $sectionType)
-            ->orderBy('order')
-            ->get();
+        return Cache::remember("course:section_data:{$sectionType}", self::CACHE_TTL, function () use ($sectionType) {
+            $data = N5CourseData::where('section_type', $sectionType)
+                ->orderBy('order')
+                ->get();
 
-        if ($data->isEmpty()) {
-            throw new InvalidArgumentException('Chưa có dữ liệu cho phần học này');
-        }
+            if ($data->isEmpty()) {
+                throw new InvalidArgumentException('Chưa có dữ liệu cho phần học này');
+            }
 
-        $groupedData = $data->groupBy('section_key');
+            $groupedData = $data->groupBy('section_key');
 
-        return [
-            'data' => $data,
-            'groupedData' => $groupedData,
-        ];
+            return [
+                'data' => $data,
+                'groupedData' => $groupedData,
+            ];
+        });
     }
 
     /**

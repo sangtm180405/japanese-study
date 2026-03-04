@@ -4,18 +4,23 @@ namespace App\Services;
 
 use App\Models\MinnaLesson;
 use App\Models\MinnaSection;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 
 class MinnaService
 {
+    private const CACHE_TTL = 600;
+
     /**
      * Lấy danh sách tất cả các bài học
      */
     public function getAllLessons()
     {
-        return MinnaLesson::select('id', 'number', 'title', 'description')
-            ->orderBy('number')
-            ->get();
+        return Cache::remember('minna:lessons:all', self::CACHE_TTL, function () {
+            return MinnaLesson::select('id', 'number', 'title', 'description')
+                ->orderBy('number')
+                ->get();
+        });
     }
 
     /**
@@ -23,19 +28,23 @@ class MinnaService
      */
     public function getLessonByNumber(int $number): MinnaLesson
     {
-        $lesson = MinnaLesson::select('id', 'number', 'title', 'description')
-            ->where('number', $number)
-            ->with(['sections' => function($query) {
-                $query->select('id', 'lesson_id', 'order_index', 'key', 'title', 'content', 'media_url')
-                      ->orderBy('order_index');
-            }])
-            ->first();
+        $cacheKey = "minna:lesson:{$number}";
 
-        if (!$lesson) {
-            throw new InvalidArgumentException('Không tìm thấy bài học');
-        }
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($number) {
+            $lesson = MinnaLesson::select('id', 'number', 'title', 'description')
+                ->where('number', $number)
+                ->with(['sections' => function ($query) {
+                    $query->select('id', 'lesson_id', 'order_index', 'key', 'title', 'content', 'media_url')
+                        ->orderBy('order_index');
+                }])
+                ->first();
 
-        return $lesson;
+            if (!$lesson) {
+                throw new InvalidArgumentException('Không tìm thấy bài học');
+            }
+
+            return $lesson;
+        });
     }
 
     /**
@@ -71,19 +80,23 @@ class MinnaService
      */
     public function getSectionByLessonAndKey(int $lessonNumber, string $sectionKey): MinnaSection
     {
-        $section = MinnaSection::select('id', 'lesson_id', 'order_index', 'key', 'title', 'content', 'media_url')
-            ->whereHas('lesson', function($query) use ($lessonNumber) {
-                $query->where('number', $lessonNumber);
-            })
-            ->where('key', $sectionKey)
-            ->with('lesson:id,number,title,description')
-            ->first();
+        $cacheKey = "minna:section:{$lessonNumber}:{$sectionKey}";
 
-        if (!$section) {
-            throw new InvalidArgumentException('Không tìm thấy section');
-        }
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($lessonNumber, $sectionKey) {
+            $section = MinnaSection::select('id', 'lesson_id', 'order_index', 'key', 'title', 'content', 'media_url')
+                ->whereHas('lesson', function ($query) use ($lessonNumber) {
+                    $query->where('number', $lessonNumber);
+                })
+                ->where('key', $sectionKey)
+                ->with('lesson:id,number,title,description')
+                ->first();
 
-        return $section;
+            if (!$section) {
+                throw new InvalidArgumentException('Không tìm thấy section');
+            }
+
+            return $section;
+        });
     }
 }
 

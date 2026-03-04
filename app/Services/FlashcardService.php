@@ -33,37 +33,48 @@ class FlashcardService
     /** Flashcard theo 1 hoặc nhiều bài */
     public function getFlashcardsByLessons(array $numbers, bool $shuffle = false): array
     {
-        $numbers = array_filter(array_map('intval', $numbers));
+        $numbers = array_values(array_unique(array_filter(array_map('intval', $numbers))));
         if (empty($numbers)) {
             return ['lessons' => [], 'cards' => []];
         }
 
-        $sections = MinnaSection::where('key', 'tu-vung')
-            ->whereHas('lesson', fn ($q) => $q->whereIn('number', $numbers))
-            ->with('lesson:id,number,title')
-            ->orderBy('lesson_id')
-            ->get();
+        $baseCacheKey = 'flashcards:base:' . implode(',', $numbers);
 
-        $lessons = [];
-        $allCards = [];
-        foreach ($sections as $section) {
-            if (!$section->lesson) continue;
-            $cards = $this->extractCards($section->content ?? []);
-            foreach ($cards as $c) {
-                $c['lesson_number'] = $section->lesson->number;
-                $allCards[] = $c;
+        $base = Cache::remember($baseCacheKey, self::CACHE_TTL, function () use ($numbers) {
+            $sections = MinnaSection::where('key', 'tu-vung')
+                ->whereHas('lesson', fn ($q) => $q->whereIn('number', $numbers))
+                ->with('lesson:id,number,title')
+                ->orderBy('lesson_id')
+                ->get();
+
+            $lessons = [];
+            $allCards = [];
+            foreach ($sections as $section) {
+                if (!$section->lesson) {
+                    continue;
+                }
+                $cards = $this->extractCards($section->content ?? []);
+                foreach ($cards as $c) {
+                    $c['lesson_number'] = $section->lesson->number;
+                    $allCards[] = $c;
+                }
+                $lessons[$section->lesson->number] = $section->lesson;
             }
-            $lessons[$section->lesson->number] = $section->lesson;
-        }
-        $lessons = array_values($lessons);
 
+            return [
+                'lessons' => array_values($lessons),
+                'cards' => $allCards,
+            ];
+        });
+
+        $cards = $base['cards'];
         if ($shuffle) {
-            shuffle($allCards);
+            shuffle($cards);
         }
 
         return [
-            'lessons' => $lessons,
-            'cards' => $allCards,
+            'lessons' => $base['lessons'],
+            'cards' => $cards,
         ];
     }
 
