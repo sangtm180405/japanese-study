@@ -1,6 +1,14 @@
 @if(isset($content['vocab']) && is_array($content['vocab']))
     <div class="mb-8">
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">Từ vựng</h3>
+        <div class="flex items-center justify-between gap-3 mb-4">
+            <h3 class="text-2xl font-bold text-gray-900">Từ vựng</h3>
+            <button
+                type="button"
+                class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-300 text-gray-700 hover:border-red-400 hover:text-red-600 transition"
+                onclick="window.toggleMeaningVisibility && window.toggleMeaningVisibility(this)">
+                Ẩn nghĩa tiếng Việt
+            </button>
+        </div>
         
         <!-- Desktop Table View -->
         <div class="hidden md:block overflow-x-auto -mx-4 px-4" style="scrollbar-width: thin; scrollbar-color: #dc2626 #f1f1f1;">
@@ -18,6 +26,10 @@
                 }
                 .vocab-table-scroll::-webkit-scrollbar-thumb:hover {
                     background: #b91c1c;
+                }
+                .hide-meaning .meaning-text {
+                    filter: blur(0.3rem);
+                    transition: filter 0.15s ease-in-out;
                 }
             </style>
             <div class="vocab-table-scroll">
@@ -65,7 +77,7 @@
                                 <td class="px-4 md:px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                     {{ $vocab['am_han'] ?? '-' }}
                                 </td>
-                                <td class="px-4 md:px-6 py-4 text-sm text-gray-900">
+                                <td class="px-4 md:px-6 py-4 text-sm text-gray-900 meaning-text">
                                     {{ $vocab['nghia'] ?? '' }}
                                 </td>
                                 <td class="px-4 md:px-6 py-4 text-sm text-gray-500">
@@ -120,7 +132,7 @@
                                 <span class="font-medium">Âm Hán:</span> {{ $vocab['am_han'] }}
                             </div>
                         @endif
-                        <div class="text-gray-900 font-medium">
+                        <div class="text-gray-900 font-medium meaning-text">
                             <span class="font-semibold">Nghĩa:</span> {{ $vocab['nghia'] ?? '' }}
                         </div>
                         @if(!empty($vocab['ghi_chu']))
@@ -134,6 +146,17 @@
         </div>
     </div>
 @endif
+
+<script>
+    window.toggleMeaningVisibility = function (button) {
+        const root = document.documentElement;
+        const isHidden = root.classList.toggle('hide-meaning');
+
+        if (button) {
+            button.textContent = isHidden ? 'Hiện nghĩa tiếng Việt' : 'Ẩn nghĩa tiếng Việt';
+        }
+    };
+</script>
 
 @if(isset($content['mau_cau']) && is_array($content['mau_cau']))
     <div class="mb-8">

@@ -1,8 +1,16 @@
 @if(is_array($content))
     <div class="space-y-8">
-        @foreach($content as $grammar)
+        @foreach($content as $index => $grammar)
             <div class="border-l-4 border-red-600 pl-6 py-4 bg-gray-50 rounded-r-lg">
-                <h3 class="text-xl font-bold text-gray-900 mb-4">{{ $grammar['title'] ?? '' }}</h3>
+                <div class="flex items-start justify-between gap-3 mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">{{ $grammar['title'] ?? '' }}</h3>
+                    <button
+                        type="button"
+                        class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-300 text-gray-700 hover:border-red-400 hover:text-red-600 transition whitespace-nowrap"
+                        onclick="window.toggleGrammarExplain && window.toggleGrammarExplain(this)">
+                        Ẩn giải thích
+                    </button>
+                </div>
                 
                 @if(isset($grammar['pattern']))
                     <div class="mb-4">
@@ -25,7 +33,7 @@
                 @endif
 
                 @if(isset($grammar['explain']))
-                    <div class="mb-4">
+                    <div class="mb-4 grammar-explain">
                         <h4 class="font-semibold text-gray-700 mb-2">Giải thích:</h4>
                         @if(is_array($grammar['explain']))
                             <ul class="list-disc list-inside space-y-1 text-gray-700">
@@ -46,7 +54,7 @@
                 @endif
 
                 @if(isset($grammar['notes']) && is_array($grammar['notes']))
-                    <div class="mb-4">
+                    <div class="mb-4 grammar-explain">
                         <h4 class="font-semibold text-gray-700 mb-2">Lưu ý:</h4>
                         <ul class="list-disc list-inside space-y-1 text-gray-600">
                             @foreach($grammar['notes'] as $note)
@@ -131,4 +139,22 @@
         @endforeach
     </div>
 @endif
+
+<script>
+    window.toggleGrammarExplain = function (button) {
+        const container = button.closest('.border-l-4');
+        if (!container) return;
+
+        const explains = container.querySelectorAll('.grammar-explain');
+        if (!explains.length) return;
+
+        const isHidden = container.classList.toggle('grammar-explain-hidden');
+
+        explains.forEach(el => {
+            el.style.display = isHidden ? 'none' : '';
+        });
+
+        button.textContent = isHidden ? 'Hiện giải thích' : 'Ẩn giải thích';
+    };
+</script>
 

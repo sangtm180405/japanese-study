@@ -315,4 +315,37 @@
             lastScroll = currentScroll;
         });
     });
+
+    // Chặn chuột phải và các phím tắt DevTools phổ biến
+    document.addEventListener('contextmenu', function (event) {
+        event.preventDefault();
+    });
+
+    document.addEventListener('keydown', function (event) {
+        const key = event.key || '';
+
+        // F12
+        if (key === 'F12' || event.keyCode === 123) {
+            event.preventDefault();
+            return false;
+        }
+
+        // Ctrl + Shift + I
+        if (event.ctrlKey && event.shiftKey && (key.toLowerCase() === 'i' || event.keyCode === 73)) {
+            event.preventDefault();
+            return false;
+        }
+
+        // Ctrl + Shift + J
+        if (event.ctrlKey && event.shiftKey && (key.toLowerCase() === 'j' || event.keyCode === 74)) {
+            event.preventDefault();
+            return false;
+        }
+
+        // Ctrl + U
+        if (event.ctrlKey && (key.toLowerCase() === 'u' || event.keyCode === 85)) {
+            event.preventDefault();
+            return false;
+        }
+    });
 </script>
