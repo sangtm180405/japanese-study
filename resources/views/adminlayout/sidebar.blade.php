@@ -48,5 +48,11 @@
             <span class="mr-3">👥</span>
             Quản lý Users
         </a>
+
+        <a href="{{ route('admin.security.index') }}" 
+           class="flex items-center px-6 py-3 {{ request()->routeIs('admin.security.*') ? 'bg-red-600 border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+            <span class="mr-3">🔒</span>
+            Bảo mật / DevTools
+        </a>
     </nav>
 </div>

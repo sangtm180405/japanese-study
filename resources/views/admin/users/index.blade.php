@@ -7,6 +7,13 @@
     </div>
 </div>
 
+@if(session('success'))
+    <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+    <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">{{ session('error') }}</div>
+@endif
+
 <!-- Filters -->
 <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
     <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -58,6 +65,9 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                    @if($user->isLocked())
+                        <span class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded bg-amber-100 text-amber-800">Đã khóa</span>
+                    @endif
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-600">{{ $user->email }}</div>
@@ -72,16 +82,28 @@
                     <div class="text-sm text-gray-600">{{ $user->created_at->format('d/m/Y') }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div class="flex space-x-2">
+                    <div class="flex flex-wrap items-center gap-2">
                         <a href="{{ route('admin.users.edit', $user) }}" 
                            class="text-indigo-600 hover:text-indigo-900">Sửa</a>
                         @if($user->id !== auth()->id())
-                        <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:text-red-900"
-                                    onclick="return confirm('Bạn có chắc muốn xóa user này?')">Xóa</button>
-                        </form>
+                            @if($user->isLocked())
+                                <form action="{{ route('admin.users.unlock', $user) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="text-amber-600 hover:text-amber-800">Mở khóa</button>
+                                </form>
+                            @else
+                                <form action="{{ route('admin.users.lock', $user) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="text-amber-600 hover:text-amber-800"
+                                            onclick="return confirm('Bạn có chắc muốn khóa tài khoản này?')">Khóa</button>
+                                </form>
+                            @endif
+                            <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:text-red-900"
+                                        onclick="return confirm('Bạn có chắc muốn xóa user này?')">Xóa</button>
+                            </form>
                         @endif
                     </div>
                 </td>

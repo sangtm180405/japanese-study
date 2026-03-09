@@ -25,6 +25,11 @@ Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])
 
 
 Route::middleware('auth')->group(function () {
+    // Báo cáo vi phạm DevTools (chỉ user thường; admin không bị ghi)
+    Route::post('/devtools-violation', [App\Http\Controllers\DevtoolsViolationController::class, '__invoke'])
+        ->middleware('throttle:devtools-violation')
+        ->name('devtools.violation');
+
     // User Dashboard
     Route::get('/dashboard', [App\Http\Controllers\UserController::class, 'dashboard'])
         ->name('user.dashboard');
@@ -124,6 +129,10 @@ Route::middleware('auth')->group(function () {
 // Admin Routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin', 'throttle:admin'])->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('security', [App\Http\Controllers\Admin\SecurityController::class, 'index'])->name('security.index');
+    Route::post('security', [App\Http\Controllers\Admin\SecurityController::class, 'update'])->name('security.update');
+    Route::post('users/{user}/lock', [App\Http\Controllers\Admin\UserController::class, 'lock'])->name('users.lock');
+    Route::post('users/{user}/unlock', [App\Http\Controllers\Admin\UserController::class, 'unlock'])->name('users.unlock');
     Route::get('notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/{notification}/read', [App\Http\Controllers\Admin\NotificationController::class, 'markRead'])->name('notifications.mark-read');
     Route::post('notifications/read-all', [App\Http\Controllers\Admin\NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');

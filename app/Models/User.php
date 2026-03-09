@@ -23,6 +23,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'locked_at',
+        'locked_reason',
     ];
 
     /**
@@ -42,8 +44,19 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'locked_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function isLocked(): bool
+    {
+        return $this->locked_at !== null;
+    }
+
+    public function devtoolsViolations(): HasMany
+    {
+        return $this->hasMany(DevtoolsViolation::class);
+    }
 
     public function progresses(): HasMany
     {

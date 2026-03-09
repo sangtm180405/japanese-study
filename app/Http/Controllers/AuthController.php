@@ -22,11 +22,28 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        $user = User::where('email', $credentials['email'])->first();
+        if ($user && $user->isLocked()) {
+            return back()->withErrors([
+                'email' => 'Tài khoản đã bị khóa do vi phạm quy định (sử dụng công cụ nhà phát triển). Vui lòng liên hệ quản trị viên.',
+            ])->onlyInput('email');
+        }
+
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $user = Auth::user();
+            if ($user->isLocked()) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return back()->withErrors([
+                    'email' => 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.',
+                ])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
 
             // Nếu là admin thì vào admin dashboard (có flash để hiển thị intro)
-            if (Auth::user()->role === 'admin') {
+            if ($user->role === 'admin') {
                 $request->session()->flash('show_admin_intro', true);
                 return redirect()->route('admin.dashboard');
             }

@@ -126,6 +126,13 @@ class RouteServiceProvider extends ServiceProvider
             return $limits;
         });
 
+        // Báo cáo vi phạm DevTools (F12, Ctrl+Shift+I/J, Ctrl+U)
+        RateLimiter::for('devtools-violation', function (Request $request) {
+            $user = $request->user();
+            $key = $user ? 'devtools:user:' . $user->id : 'devtools:ip:' . ($request->ip() ?? 'unknown');
+            return [Limit::perMinute(20)->by($key)];
+        });
+
         // Admin panel
         RateLimiter::for('admin', function (Request $request) {
             $ip = $request->ip() ?? 'unknown';

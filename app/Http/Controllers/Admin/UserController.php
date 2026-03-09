@@ -63,6 +63,41 @@ class UserController extends Controller
     }
 
     /**
+     * Khóa tài khoản (admin chủ động khóa user).
+     */
+    public function lock(Request $request, User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Bạn không thể khóa chính mình!');
+        }
+
+        $reason = $request->input('reason', 'Khóa bởi quản trị viên.');
+        $user->update([
+            'locked_at' => now(),
+            'locked_reason' => $reason,
+        ]);
+        Cache::forget('admin:dashboard:stats');
+
+        return redirect()->back()->with('success', 'Đã khóa tài khoản.');
+    }
+
+    /**
+     * Mở khóa tài khoản (xóa locked_at, locked_reason).
+     */
+    public function unlock(User $user)
+    {
+        $user->update([
+            'locked_at' => null,
+            'locked_reason' => null,
+        ]);
+        Cache::forget('admin:dashboard:stats');
+
+        return redirect()->route('admin.users.edit', $user)
+            ->with('success', 'Đã mở khóa tài khoản.');
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(User $user)

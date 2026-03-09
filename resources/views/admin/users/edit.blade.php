@@ -10,6 +10,32 @@
     </div>
 </div>
 
+@if($user->isLocked())
+    <div class="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
+        <div>
+            <span class="font-medium text-amber-800">Tài khoản đang bị khóa</span>
+            @if($user->locked_reason)
+                <p class="text-sm text-amber-700 mt-1">{{ $user->locked_reason }}</p>
+            @endif
+        </div>
+        @if($user->id !== auth()->id())
+            <form action="{{ route('admin.users.unlock', $user) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700">Mở khóa</button>
+            </form>
+        @endif
+    </div>
+@elseif($user->id !== auth()->id())
+    <div class="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+        <span class="text-gray-700">Tài khoản đang hoạt động.</span>
+        <form action="{{ route('admin.users.lock', $user) }}" method="POST" class="inline">
+            @csrf
+            <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700"
+                    onclick="return confirm('Bạn có chắc muốn khóa tài khoản này?')">Khóa tài khoản</button>
+        </form>
+    </div>
+@endif
+
 <div class="bg-white rounded-lg shadow-sm p-6">
     <form action="{{ route('admin.users.update', $user) }}" method="POST">
         @csrf

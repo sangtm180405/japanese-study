@@ -316,35 +316,55 @@
         });
     });
 
-    // Chặn chuột phải và các phím tắt DevTools phổ biến
+    // Chặn chuột phải và các phím tắt DevTools phổ biến + ghi log / khóa tài khoản khi vi phạm
     document.addEventListener('contextmenu', function (event) {
         event.preventDefault();
     });
 
+    @auth
+    window.__devtoolsReport = {
+        url: @json(route('devtools.violation')),
+        csrf: @json(csrf_token()),
+        report: function (violationType) {
+            fetch(this.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': this.csrf,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ violation_type: violationType })
+            }).then(function (r) {
+                if (r.status === 200) {
+                    r.json().then(function (data) {
+                        if (data && data.locked) window.location.reload();
+                    }).catch(function () {});
+                } else if (r.status === 403) {
+                    window.location.reload();
+                }
+            }).catch(function () {});
+        }
+    };
+    @endauth
+
     document.addEventListener('keydown', function (event) {
         const key = event.key || '';
+        var violationType = null;
 
-        // F12
         if (key === 'F12' || event.keyCode === 123) {
-            event.preventDefault();
-            return false;
+            violationType = 'f12';
+        } else if (event.ctrlKey && event.shiftKey && (key.toLowerCase() === 'i' || event.keyCode === 73)) {
+            violationType = 'ctrl_shift_i';
+        } else if (event.ctrlKey && event.shiftKey && (key.toLowerCase() === 'j' || event.keyCode === 74)) {
+            violationType = 'ctrl_shift_j';
+        } else if (event.ctrlKey && (key.toLowerCase() === 'u' || event.keyCode === 85)) {
+            violationType = 'ctrl_u';
         }
 
-        // Ctrl + Shift + I
-        if (event.ctrlKey && event.shiftKey && (key.toLowerCase() === 'i' || event.keyCode === 73)) {
+        if (violationType) {
             event.preventDefault();
-            return false;
-        }
-
-        // Ctrl + Shift + J
-        if (event.ctrlKey && event.shiftKey && (key.toLowerCase() === 'j' || event.keyCode === 74)) {
-            event.preventDefault();
-            return false;
-        }
-
-        // Ctrl + U
-        if (event.ctrlKey && (key.toLowerCase() === 'u' || event.keyCode === 85)) {
-            event.preventDefault();
+            if (window.__devtoolsReport) window.__devtoolsReport.report(violationType);
             return false;
         }
     });
