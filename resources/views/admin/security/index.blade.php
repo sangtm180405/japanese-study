@@ -40,6 +40,22 @@
                 <p class="text-xs text-gray-500 mt-1">Chỉ đếm vi phạm trong X giờ gần nhất để quyết định khóa.</p>
             </div>
         </div>
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+                <label for="lock_message" class="block text-sm font-medium text-gray-700 mb-2">Thông báo gửi cho user khi bị khóa</label>
+                <textarea id="lock_message" name="devtools_lock_message" rows="3" maxlength="500"
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2"
+                          placeholder="Nội dung hiển thị khi user đăng nhập bị chặn (để trống = giữ nguyên)">{{ $settings['devtools_lock_message'] ?? '' }}</textarea>
+                <p class="text-xs text-gray-500 mt-1">Tối đa 500 ký tự. Hiển thị tại form đăng nhập và khi session bị đăng xuất do khóa.</p>
+            </div>
+            <div>
+                <label for="auto_unlock_hours" class="block text-sm font-medium text-gray-700 mb-2">Tự mở khóa sau (giờ)</label>
+                <input type="number" id="auto_unlock_hours" name="devtools_auto_unlock_hours"
+                       value="{{ $settings['devtools_auto_unlock_hours'] ?? 0 }}"
+                       min="0" max="720" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                <p class="text-xs text-gray-500 mt-1">0 = không tự mở. &gt;0 = soft-ban: sau X giờ tài khoản tự mở khóa.</p>
+            </div>
+        </div>
         <div class="mt-6">
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Lưu cài đặt</button>
         </div>

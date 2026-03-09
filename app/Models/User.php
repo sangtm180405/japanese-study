@@ -48,9 +48,30 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    /**
+     * Kiểm tra và áp dụng tự mở khóa sau X giờ (soft-ban). Trả về true nếu vẫn đang khóa.
+     */
+    public function refreshLockState(): bool
+    {
+        if ($this->locked_at === null) {
+            return false;
+        }
+        $hours = (int) \App\Models\SecuritySetting::get('devtools_auto_unlock_hours', '0');
+        if ($hours <= 0) {
+            return true;
+        }
+        if ($this->locked_at->addHours($hours)->isPast()) {
+            $this->update(['locked_at' => null, 'locked_reason' => null]);
+            $this->refresh();
+            SystemLog::add($this, 'user_auto_unlocked', 'Tài khoản được tự động mở khóa sau ' . $hours . ' giờ.', ['hours' => $hours]);
+            return false;
+        }
+        return true;
+    }
+
     public function isLocked(): bool
     {
-        return $this->locked_at !== null;
+        return $this->refreshLockState();
     }
 
     public function devtoolsViolations(): HasMany

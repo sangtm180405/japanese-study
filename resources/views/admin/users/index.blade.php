@@ -16,7 +16,7 @@
 
 <!-- Filters -->
 <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-    <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Vai trò</label>
             <select name="role" class="w-full border border-gray-300 rounded-lg px-3 py-2">
@@ -25,21 +25,36 @@
                 <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
             </select>
         </div>
-        
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
-            <input type="text" name="search" value="{{ request('search') }}" 
-                   placeholder="Tên hoặc email..." 
+            <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái khóa</label>
+            <select name="locked_status" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                <option value="">Tất cả</option>
+                <option value="locked" {{ request('locked_status') == 'locked' ? 'selected' : '' }}>Đang khóa</option>
+                <option value="unlocked" {{ request('locked_status') == 'unlocked' ? 'selected' : '' }}>Không khóa</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày tạo từ</label>
+            <input type="date" name="date_from" value="{{ request('date_from') }}"
                    class="w-full border border-gray-300 rounded-lg px-3 py-2">
         </div>
-        
-        <div class="flex items-end">
-            <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 mr-2">
-                Lọc
-            </button>
-            <a href="{{ route('admin.users.index') }}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
-                Reset
-            </a>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ngày tạo đến</label>
+            <input type="date" name="date_to" value="{{ request('date_to') }}"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2">
+        </div>
+        <div class="flex flex-col gap-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
+            <div class="flex gap-2">
+                <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Lọc</button>
+                <a href="{{ route('admin.users.index') }}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">Reset</a>
+            </div>
+        </div>
+        <div class="lg:col-span-5">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm (tên / email)</label>
+            <input type="text" name="search" value="{{ request('search') }}"
+                   placeholder="Tên hoặc email..."
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2">
         </div>
     </form>
 </div>

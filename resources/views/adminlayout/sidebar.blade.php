@@ -54,5 +54,10 @@
             <span class="mr-3">🔒</span>
             Bảo mật / DevTools
         </a>
+        <a href="{{ route('admin.system-logs.index') }}" 
+           class="flex items-center px-6 py-3 {{ request()->routeIs('admin.system-logs.*') ? 'bg-red-600 border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+            <span class="mr-3">📋</span>
+            Log hệ thống
+        </a>
     </nav>
 </div>

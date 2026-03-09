@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DevtoolsViolation;
 use App\Models\Notification;
 use App\Models\SecuritySetting;
+use App\Models\SystemLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,11 +47,13 @@ class DevtoolsViolationController extends Controller
             $since = now()->subHours($windowHours);
             $count = DevtoolsViolation::where('user_id', $user->id)->where('created_at', '>=', $since)->count();
             if ($count >= $lockAfter) {
+                $lockMessage = SecuritySetting::get('devtools_lock_message', 'Tài khoản đã bị khóa do vi phạm quy định. Vui lòng liên hệ quản trị viên.');
                 $user->update([
                     'locked_at' => now(),
-                    'locked_reason' => 'Vi phạm quy định: sử dụng công cụ nhà phát triển (F12 / Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+U).',
+                    'locked_reason' => $lockMessage,
                 ]);
                 Notification::createForAdmins('user_locked', 'Tài khoản bị khóa', $user->name . ' (' . $user->email . ') đã bị khóa do vi phạm DevTools.', ['user_id' => $user->id]);
+                SystemLog::add($user, 'user_locked', $user->name . ' (' . $user->email . ') bị khóa do vi phạm DevTools.', ['source' => 'devtools']);
                 return response()->json(['message' => 'Violation logged', 'locked' => true], 200);
             }
         }

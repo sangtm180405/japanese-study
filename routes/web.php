@@ -131,6 +131,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin', 'throttle:a
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('security', [App\Http\Controllers\Admin\SecurityController::class, 'index'])->name('security.index');
     Route::post('security', [App\Http\Controllers\Admin\SecurityController::class, 'update'])->name('security.update');
+    Route::get('system-logs', [App\Http\Controllers\Admin\SystemLogController::class, 'index'])->name('system-logs.index');
     Route::post('users/{user}/lock', [App\Http\Controllers\Admin\UserController::class, 'lock'])->name('users.lock');
     Route::post('users/{user}/unlock', [App\Http\Controllers\Admin\UserController::class, 'unlock'])->name('users.unlock');
     Route::get('notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');

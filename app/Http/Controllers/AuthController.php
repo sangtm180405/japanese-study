@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Models\SecuritySetting;
+use App\Models\SystemLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,11 +24,11 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        $lockMessage = trim((string) SecuritySetting::get('devtools_lock_message', '')) ?: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.';
+
         $user = User::where('email', $credentials['email'])->first();
         if ($user && $user->isLocked()) {
-            return back()->withErrors([
-                'email' => 'Tài khoản đã bị khóa do vi phạm quy định (sử dụng công cụ nhà phát triển). Vui lòng liên hệ quản trị viên.',
-            ])->onlyInput('email');
+            return back()->withErrors(['email' => $lockMessage])->onlyInput('email');
         }
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
@@ -35,9 +37,7 @@ class AuthController extends Controller
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
-                return back()->withErrors([
-                    'email' => 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.',
-                ])->onlyInput('email');
+                return back()->withErrors(['email' => $lockMessage])->onlyInput('email');
             }
 
             $request->session()->regenerate();
@@ -50,6 +50,11 @@ class AuthController extends Controller
 
             return redirect()->intended(route('home'));
         }
+
+        SystemLog::add(null, 'failed_login', 'Đăng nhập thất bại: ' . $credentials['email'], [
+            'email' => $credentials['email'],
+            'ip' => $request->ip(),
+        ]);
 
         return back()->withErrors([
             'email' => 'Email hoặc mật khẩu không đúng.',
@@ -77,6 +82,7 @@ class AuthController extends Controller
         ]);
 
         Notification::createForAdmins('new_user', 'User mới đăng ký', $user->name . ' (' . $user->email . ') vừa đăng ký tài khoản.', ['user_id' => $user->id]);
+        SystemLog::add($user, 'user_registered', $user->name . ' (' . $user->email . ') đăng ký tài khoản.', ['email' => $user->email]);
 
         Auth::login($user);
 

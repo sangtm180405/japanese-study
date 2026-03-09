@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\SystemLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -18,14 +19,27 @@ class UserController extends Controller
     {
         $query = User::query();
 
-        // Filter by role
-        if ($request->has('role') && $request->role) {
+        if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
-        // Search by name or email
-        if ($request->has('search') && $request->search) {
-            $query->where(function($q) use ($request) {
+        if ($request->filled('locked_status')) {
+            if ($request->locked_status === 'locked') {
+                $query->whereNotNull('locked_at');
+            } elseif ($request->locked_status === 'unlocked') {
+                $query->whereNull('locked_at');
+            }
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('email', 'like', '%' . $request->search . '%');
             });
@@ -77,6 +91,7 @@ class UserController extends Controller
             'locked_at' => now(),
             'locked_reason' => $reason,
         ]);
+        SystemLog::add($user, 'user_locked', $user->name . ' (' . $user->email . ') bị khóa bởi admin.', ['source' => 'admin', 'reason' => $reason]);
         Cache::forget('admin:dashboard:stats');
 
         return redirect()->back()->with('success', 'Đã khóa tài khoản.');
@@ -91,6 +106,7 @@ class UserController extends Controller
             'locked_at' => null,
             'locked_reason' => null,
         ]);
+        SystemLog::add($user, 'user_unlocked', $user->name . ' (' . $user->email . ') được mở khóa bởi admin.', ['source' => 'admin']);
         Cache::forget('admin:dashboard:stats');
 
         return redirect()->route('admin.users.edit', $user)
