@@ -140,7 +140,7 @@
                 <!-- Mobile menu button -->
                 <button type="button"
                         id="mobile-menu-toggle"
-                        class="lg:hidden inline-flex items-center justify-center w-10 h-10 text-gray-700 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-300">
+                        class="lg:hidden inline-flex items-center justify-center w-10 h-10 text-gray-700 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-300 touch-manipulation disabled:opacity-60 disabled:pointer-events-none">
                     <span class="sr-only">Mở menu</span>
                     <svg id="menu-icon" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                         <line x1="4" y1="7" x2="20" y2="7"></line>
@@ -156,8 +156,8 @@
         </div>
     </nav>
 
-    <!-- Mobile menu panel -->
-    <div id="mobile-menu-panel" class="lg:hidden hidden bg-white border-t border-gray-200 shadow-xl">
+    <!-- Mobile menu panel: overflow-hidden + max-height transition để transitionend ổn định, tránh khựng khi spam nút menu -->
+    <div id="mobile-menu-panel" class="lg:hidden hidden overflow-hidden bg-white border-t border-gray-200 shadow-xl transition-[max-height] duration-300 ease-out motion-reduce:transition-none">
         <div class="px-4 pt-4 pb-6 space-y-1">
             <a href="{{ route('home') }}"
                class="flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 {{ request()->routeIs('home') ? 'bg-red-50 text-red-600' : 'text-gray-700 hover:bg-gray-50 hover:text-red-600' }}">
@@ -275,26 +275,75 @@
         
         if (!toggle || !panel) return;
 
+        let mobileMenuOpen = false;
+        let mobileMenuBusy = false;
+        let mobileMenuFallbackTimer = null;
+
+        function clearMobileMenuFallback() {
+            if (mobileMenuFallbackTimer !== null) {
+                clearTimeout(mobileMenuFallbackTimer);
+                mobileMenuFallbackTimer = null;
+            }
+        }
+
+        function setMobileMenuBusy(busy) {
+            mobileMenuBusy = busy;
+            toggle.disabled = busy;
+            toggle.setAttribute('aria-busy', busy ? 'true' : 'false');
+        }
+
+        function onMobilePanelTransitionEnd(e) {
+            if (e.target !== panel || e.propertyName !== 'max-height') {
+                return;
+            }
+            clearMobileMenuFallback();
+            setMobileMenuBusy(false);
+            if (!mobileMenuOpen) {
+                panel.classList.add('hidden');
+                menuIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            }
+        }
+
+        panel.addEventListener('transitionend', onMobilePanelTransitionEnd);
+
         toggle.addEventListener('click', function () {
-            const isHidden = panel.classList.contains('hidden');
-            
-            if (isHidden) {
+            if (mobileMenuBusy) {
+                return;
+            }
+
+            clearMobileMenuFallback();
+            setMobileMenuBusy(true);
+
+            if (!mobileMenuOpen) {
+                mobileMenuOpen = true;
                 panel.classList.remove('hidden');
                 menuIcon.classList.add('hidden');
                 closeIcon.classList.remove('hidden');
-                // Smooth slide down animation
-                panel.style.maxHeight = '0';
-                setTimeout(() => {
-                    panel.style.maxHeight = panel.scrollHeight + 'px';
-                }, 10);
+                panel.style.maxHeight = '0px';
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        panel.style.maxHeight = panel.scrollHeight + 'px';
+                    });
+                });
             } else {
-                panel.style.maxHeight = '0';
-                setTimeout(() => {
+                mobileMenuOpen = false;
+                panel.style.maxHeight = '0px';
+            }
+
+            // Một số trình duyệt không bắn transitionend (hoặc user bật reduce motion) — vẫn mở khóa sau 400ms
+            mobileMenuFallbackTimer = window.setTimeout(function () {
+                mobileMenuFallbackTimer = null;
+                if (!mobileMenuBusy) {
+                    return;
+                }
+                setMobileMenuBusy(false);
+                if (!mobileMenuOpen) {
                     panel.classList.add('hidden');
                     menuIcon.classList.remove('hidden');
                     closeIcon.classList.add('hidden');
-                }, 300);
-            }
+                }
+            }, 400);
         });
 
         // Header scroll effect
