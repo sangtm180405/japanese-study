@@ -7,9 +7,7 @@ use App\Models\Kanji;
 use App\Services\KanjiService;
 use App\Http\Requests\StoreKanjiRequest;
 use App\Http\Requests\UpdateKanjiRequest;
-use App\Services\AlphabetService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class KanjiController extends Controller
 {
@@ -48,9 +46,6 @@ class KanjiController extends Controller
     public function store(StoreKanjiRequest $request)
     {
         Kanji::create($request->validated());
-        Cache::forget('dashboard:total_kanjis');
-        Cache::forget('admin:dashboard:stats');
-        AlphabetService::clearAlphabetCache();
 
         return redirect()->route('admin.kanjis.index')
                         ->with('success', 'Kanji đã được thêm thành công!');
@@ -78,9 +73,6 @@ class KanjiController extends Controller
     public function update(UpdateKanjiRequest $request, Kanji $kanji)
     {
         $kanji->update($request->validated());
-        Cache::forget('dashboard:total_kanjis');
-        Cache::forget('admin:dashboard:stats');
-        AlphabetService::clearAlphabetCache();
 
         return redirect()->route('admin.kanjis.index')
                         ->with('success', 'Kanji đã được cập nhật thành công!');
@@ -92,9 +84,6 @@ class KanjiController extends Controller
     public function destroy(Kanji $kanji)
     {
         $kanji->delete();
-        Cache::forget('dashboard:total_kanjis');
-        Cache::forget('admin:dashboard:stats');
-        AlphabetService::clearAlphabetCache();
 
         return redirect()->route('admin.kanjis.index')
                         ->with('success', 'Kanji đã được xóa thành công!');

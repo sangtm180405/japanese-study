@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\MinnaSection;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class MinnaSectionController extends Controller
 {
@@ -49,8 +48,6 @@ class MinnaSectionController extends Controller
         }
 
         $minnaSection->save();
-
-        Cache::forget('flashcard:lessons');
 
         return redirect()
             ->route('admin.minna.show', $minnaSection->lesson)

@@ -19,13 +19,14 @@
 
 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
     @forelse($notifications as $notification)
-        <div class="border-b border-gray-100 last:border-0 {{ $notification->isReadBy(auth()->user()) ? 'bg-gray-50/50' : 'bg-white' }}">
+        @php $isRead = $notification->isReadBy(auth()->user()); @endphp
+        <div class="border-b border-gray-100 last:border-0 {{ $isRead ? 'bg-gray-50/50' : 'bg-white' }}">
             <div class="px-6 py-4 flex items-start gap-4">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="font-semibold text-gray-900">{{ $notification->title }}</span>
                         <span class="text-xs text-gray-500">{{ $notification->created_at->diffForHumans() }}</span>
-                        @if(!$notification->isReadBy(auth()->user()))
+                        @if(!$isRead)
                             <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Mới</span>
                         @endif
                     </div>
@@ -33,7 +34,7 @@
                         <p class="text-sm text-gray-600 mt-1">{{ $notification->message }}</p>
                     @endif
                 </div>
-                @if(!$notification->isReadBy(auth()->user()))
+                @if(!$isRead)
                     <form method="POST" action="{{ route('admin.notifications.mark-read', $notification) }}" class="flex-shrink-0">
                         @csrf
                         <button type="submit" class="text-xs text-red-600 hover:text-red-700 font-medium">Đã đọc</button>

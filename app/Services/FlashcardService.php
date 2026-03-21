@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\MinnaSection;
+use App\Support\Cache\FlashcardCache;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -38,7 +39,8 @@ class FlashcardService
             return ['lessons' => [], 'cards' => []];
         }
 
-        $baseCacheKey = 'flashcards:base:' . implode(',', $numbers);
+        $v = FlashcardCache::currentBaseVersion();
+        $baseCacheKey = 'flashcards:base:v'.$v.':'.implode(',', $numbers);
 
         $base = Cache::remember($baseCacheKey, self::CACHE_TTL, function () use ($numbers) {
             $sections = MinnaSection::where('key', 'tu-vung')

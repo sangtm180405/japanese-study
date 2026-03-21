@@ -7,7 +7,6 @@ use App\Http\Requests\StoreCourseDataRequest;
 use App\Http\Requests\UpdateCourseDataRequest;
 use App\Models\N5CourseData;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class CourseDataController extends Controller
 {
@@ -66,7 +65,6 @@ class CourseDataController extends Controller
         }
 
         N5CourseData::create($data);
-        Cache::forget('admin:dashboard:stats');
 
         return redirect()->route('admin.course-data.index')
                         ->with('success', 'Course data đã được thêm thành công!');
@@ -95,7 +93,6 @@ class CourseDataController extends Controller
         }
 
         $courseData->update($data);
-        Cache::forget('admin:dashboard:stats');
 
         return redirect()->route('admin.course-data.index')
                         ->with('success', 'Course data đã được cập nhật thành công!');
@@ -107,7 +104,6 @@ class CourseDataController extends Controller
     public function destroy(N5CourseData $courseData)
     {
         $courseData->delete();
-        Cache::forget('admin:dashboard:stats');
 
         return redirect()->route('admin.course-data.index')
                         ->with('success', 'Course data đã được xóa thành công!');

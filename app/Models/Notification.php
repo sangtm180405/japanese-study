@@ -90,6 +90,10 @@ class Notification extends Model
 
     public function isReadBy(User $user): bool
     {
+        if ($this->relationLoaded('reads')) {
+            return $this->reads->where('user_id', $user->id)->isNotEmpty();
+        }
+
         return $this->reads()->where('user_id', $user->id)->exists();
     }
 }

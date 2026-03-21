@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateMinnaRequest;
 use App\Models\MinnaLesson;
 use App\Models\MinnaSection;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class MinnaController extends Controller
 {
@@ -50,7 +49,6 @@ class MinnaController extends Controller
         $lesson = MinnaLesson::create($request->validated());
 
         $this->createDefaultSections($lesson);
-        $this->clearDashboardCache();
 
         return redirect()->route('admin.minna.index')
                         ->with('success', 'Bài học đã được thêm thành công! Đã tạo 5 phần (Từ vựng, Ngữ pháp, Luyện đọc, Hội thoại, Hán tự).');
@@ -79,7 +77,6 @@ class MinnaController extends Controller
     public function update(UpdateMinnaRequest $request, MinnaLesson $minna)
     {
         $minna->update($request->validated());
-        $this->clearDashboardCache();
 
         return redirect()->route('admin.minna.index')
                         ->with('success', 'Bài học đã được cập nhật thành công!');
@@ -107,17 +104,9 @@ class MinnaController extends Controller
     public function destroy(MinnaLesson $minna)
     {
         $minna->delete();
-        $this->clearDashboardCache();
 
         return redirect()->route('admin.minna.index')
                         ->with('success', 'Bài học đã được xóa thành công!');
-    }
-
-    private function clearDashboardCache(): void
-    {
-        Cache::forget('dashboard:total_minna_lessons');
-        Cache::forget('dashboard:first_minna_lesson');
-        Cache::forget('admin:dashboard:stats');
     }
 
     /**

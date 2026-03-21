@@ -8,7 +8,6 @@ use App\Services\AlphabetService;
 use App\Http\Requests\StoreAlphabetRequest;
 use App\Http\Requests\UpdateAlphabetRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class AlphabetController extends Controller
 {
@@ -47,8 +46,6 @@ class AlphabetController extends Controller
     public function store(StoreAlphabetRequest $request)
     {
         Alphabet::create($request->validated());
-        Cache::forget('admin:dashboard:stats');
-        AlphabetService::clearAlphabetCache();
 
         return redirect()->route('admin.alphabets.index')
                         ->with('success', 'Ký tự đã được thêm thành công!');
@@ -68,8 +65,6 @@ class AlphabetController extends Controller
     public function update(UpdateAlphabetRequest $request, Alphabet $alphabet)
     {
         $alphabet->update($request->validated());
-        Cache::forget('admin:dashboard:stats');
-        AlphabetService::clearAlphabetCache();
 
         return redirect()->route('admin.alphabets.index')
                         ->with('success', 'Ký tự đã được cập nhật thành công!');
@@ -81,8 +76,6 @@ class AlphabetController extends Controller
     public function destroy(Alphabet $alphabet)
     {
         $alphabet->delete();
-        Cache::forget('admin:dashboard:stats');
-        AlphabetService::clearAlphabetCache();
 
         return redirect()->route('admin.alphabets.index')
                         ->with('success', 'Ký tự đã được xóa thành công!');
